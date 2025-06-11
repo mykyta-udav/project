@@ -1,5 +1,6 @@
 package com.restaurantbackendapp;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.handler.HandlersModule;
 import com.restaurantbackendapp.utils.UtilsModule;
@@ -18,4 +19,7 @@ public interface Application {
 
     @Named("general")
     EndpointHandler getGeneralApiHandler();
+
+    @Named("dynamoDbClient")
+    AmazonDynamoDB initializeDynamoDBClient();
 }

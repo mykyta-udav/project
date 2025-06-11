@@ -16,14 +16,14 @@ public class UtilsModule {
 
     @Singleton
     @Provides
-    Gson provideGson() {
+    public Gson provideGson() {
         return new Gson();
     }
 
     @Singleton
     @Provides
     @Named("cors")
-    Map<String, String> provideCorsHeaders() {
+    public Map<String, String> provideCorsHeaders() {
         return Map.of(
                 "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
                 "Access-Control-Allow-Origin", "*",
@@ -35,9 +35,9 @@ public class UtilsModule {
     @Singleton
     @Provides
     @Named("dynamoDbClient")
-    private AmazonDynamoDB initializeDynamoDBClient(String region) {
+    public AmazonDynamoDB provideDynamoDBClient() {
         return AmazonDynamoDBClientBuilder.standard()
-                .withRegion(System.getenv(region))
+                .withRegion(System.getenv("REGION"))
                 .withClientConfiguration(new ClientConfiguration()
                         .withConnectionTimeout(2000)
                         .withRequestTimeout(5000))
