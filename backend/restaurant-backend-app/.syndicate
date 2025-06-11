@@ -1,6 +1,0 @@
-name: restaurant-backend-app
-build_projects_mapping:
-  java: jsrc/main/java
-lambdas:
-  restaurant-api-handler:
-    runtime: java
