@@ -1,8 +1,8 @@
 package com.restaurantbackendapp.handler.impl;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restaurantbackendapp.dto.SignInRequestDto;
 import com.restaurantbackendapp.dto.SignInResponseDto;
@@ -13,7 +13,6 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SignInHandler implements EndpointHandler {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -31,7 +30,7 @@ public class SignInHandler implements EndpointHandler {
     }
 
     @Override
-    public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
+    public APIGatewayProxyResponseEvent handle(APIGatewayV2HTTPEvent requestEvent, Context context) {
 
         // Parse the request body to get email and password
         SignInRequestDto requestDto;
