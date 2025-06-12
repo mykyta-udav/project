@@ -1,10 +1,15 @@
 package com.restaurantbackendapp.handler;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.impl.GeneralHandler;
+import com.restaurantbackendapp.handler.impl.GetTablesHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
 import dagger.Module;
 import dagger.Provides;
+import dagger.multibindings.IntoMap;
+import dagger.multibindings.StringKey;
+
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -21,11 +26,18 @@ public class HandlersModule {
         return new GeneralHandler(notFoundHandler, handlerMap);
     }
 
-    // Handler for 404 Not Found responses
     @Singleton
     @Provides
     @Named("notFound")
     public EndpointHandler provideNotFoundHandler(Gson gson) {
         return new NotFoundHandler(gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/bookings/tables")
+    public EndpointHandler provideGetTablesHandler(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient, Gson gson) {
+        return new GetTablesHandler(dynamoDbClient, gson);
     }
 }
