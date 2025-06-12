@@ -7,11 +7,14 @@
             "logs:CreateLogGroup",
             "logs:CreateLogStream",
             "logs:PutLogEvents",
+            "s3:PutObject",
             "dynamodb:GetItem",
             "dynamodb:Query",
             "dynamodb:PutItem",
             "dynamodb:Batch*",
             "dynamodb:DeleteItem",
+            "dynamodb:Scan",
+            "dynamodb:UpdateItem",
             "ssm:PutParameter",
             "ssm:GetParameter",
             "kms:Decrypt"
@@ -32,6 +35,58 @@
       "lambda-basic-execution"
     ],
     "resource_type": "iam_role",
+    "tags": {}
+  },
+  "restaurant-api-gateway": {
+    "resource_type": "api_gateway",
+    "deploy_stage": "api",
+    "dependencies": [],
+    "resources": {
+      "/bookings/tables": {
+        "enable_cors": false,
+        "GET": {
+          "authorization_type": "NONE",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      }
+    },
+    "tags": {}
+  },
+  "${tables_table}": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "locationId",
+    "hash_key_type": "S",
+    "sort_key_name": "tableNumber",
+    "sort_key_type": "N",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": [],
+    "tags": {}
+  },
+  "Reservations": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "reservationId",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [
+      {
+        "name": "LocationDateIndex",
+        "index_key_name": "locationId",
+        "index_key_type": "S",
+        "index_sort_key_name": "date",
+        "index_sort_key_type": "S"
+      }
+    ],
+    "autoscaling": [],
     "tags": {}
   }
 }
