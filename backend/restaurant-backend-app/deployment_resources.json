@@ -38,6 +38,16 @@
     "resource_type": "api_gateway",
     "deploy_stage": "api/v1",
     "dependencies": [],
+    "authorizers": {
+      "authorizer": {
+        "type": "COGNITO_USER_POOLS",
+        "identity_source": "method.request.header.Authorization",
+        "user_pools": [
+          "restaurant-user-pool"
+        ],
+        "ttl": 300
+      }
+    },
     "resources": {
       "/auth/sign-up": {
         "enable_cors": false,

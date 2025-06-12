@@ -3,8 +3,12 @@ package com.restaurantbackendapp.handler;
 import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.impl.GeneralHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
+import com.restaurantbackendapp.handler.impl.SignInHandler;
 import dagger.Module;
 import dagger.Provides;
+import dagger.multibindings.IntoMap;
+import dagger.multibindings.StringKey;
+
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -27,5 +31,13 @@ public class HandlersModule {
     @Named("notFound")
     public EndpointHandler provideNotFoundHandler(Gson gson) {
         return new NotFoundHandler(gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("POST:/signin")
+    public EndpointHandler provideSignInHandler() {
+        return new SignInHandler();
     }
 }
