@@ -36,8 +36,8 @@ public class HandlersModule {
     @Singleton
     @Provides
     @IntoMap
-    @StringKey("POST:/signin")
-    public EndpointHandler provideSignInHandler() {
-        return new SignInHandler();
+    @StringKey("POST:/sign-in")
+    public EndpointHandler provideSignInHandler(SignInHandler handler) {
+        return handler;
     }
 }

@@ -21,8 +21,8 @@ public class GeneralHandler implements EndpointHandler {
         // Construct the route key based on the HTTP method and path. This key is used to look up the appropriate handler.
         // For example, a GET request to /files would have a route key of "GET:/files".
         // The @IntoMap and @StringKey annotations in the HandlersModule.class should be used to define the route key for each handler.
-        String routeKey = requestEvent.getHttpMethod() + ":" + requestEvent.getPath();
-
+        String routeKey = requestEvent.getResource() + ":" + requestEvent.getPath();
+        System.out.printf(routeKey);
         return handlerMap.getOrDefault(routeKey, notFoundHandler).handle(requestEvent, context);
     }
 }

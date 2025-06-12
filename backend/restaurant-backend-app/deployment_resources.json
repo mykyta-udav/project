@@ -14,7 +14,18 @@
             "dynamodb:DeleteItem",
             "ssm:PutParameter",
             "ssm:GetParameter",
-            "kms:Decrypt"
+            "kms:Decrypt",
+            "cognito-idp:DescribeUserPool",
+            "cognito-idp:GetUser",
+            "cognito-idp:ListUsers",
+            "cognito-idp:AdminCreateUser",
+            "cognito-idp:AdminInitiateAuth",
+            "cognito-idp:GetIdentityProviderByIdentifier",
+            "cognito-idp:ListUserPools",
+            "cognito-idp:ListUserPoolClients",
+            "cognito-idp:AdminRespondToAuthChallenge",
+            "cognito-idp:AdminConfirmSignUp",
+            "cognito-idp:AdminSetUserPassword"
           ],
           "Effect": "Allow",
           "Resource": "*"
@@ -36,7 +47,7 @@
   },
   "restaurant-api-gateway": {
     "resource_type": "api_gateway",
-    "deploy_stage": "api/v1",
+    "deploy_stage": "api",
     "dependencies": [],
     "authorizers": {
       "authorizer": {
@@ -53,7 +64,8 @@
         "enable_cors": false,
         "POST": {
           "authorization_type": "NONE",
-          "integration_type": "mock",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
           "method_request_parameters": {},
           "integration_request_body_template": {},
@@ -66,7 +78,8 @@
         "enable_cors": false,
         "POST": {
           "authorization_type": "NONE",
-          "integration_type": "mock",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
           "method_request_parameters": {},
           "integration_request_body_template": {},
