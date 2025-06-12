@@ -3,12 +3,8 @@ package com.restaurantbackendapp.handler;
 import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.impl.GeneralHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
-import com.restaurantbackendapp.handler.impl.SignInHandler;
 import dagger.Module;
 import dagger.Provides;
-import dagger.multibindings.IntoMap;
-import dagger.multibindings.StringKey;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -39,5 +35,13 @@ public class HandlersModule {
     @StringKey("POST:/sign-in")
     public EndpointHandler provideSignInHandler(SignInHandler handler) {
         return handler;
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/bookings/tables")
+    public EndpointHandler provideGetTablesHandler(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient, Gson gson) {
+        return new GetTablesHandler(dynamoDbClient, gson);
     }
 }
