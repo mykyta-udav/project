@@ -35,9 +35,9 @@ public class UtilsModule {
     @Singleton
     @Provides
     @Named("dynamoDbClient")
-    private AmazonDynamoDB initializeDynamoDBClient(String region) {
+    public AmazonDynamoDB initializeDynamoDBClient() {
         return AmazonDynamoDBClientBuilder.standard()
-                .withRegion(System.getenv(region))
+                .withRegion(System.getenv("REGION"))
                 .withClientConfiguration(new ClientConfiguration()
                         .withConnectionTimeout(2000)
                         .withRequestTimeout(5000))
