@@ -9,7 +9,6 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.StringKey;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
