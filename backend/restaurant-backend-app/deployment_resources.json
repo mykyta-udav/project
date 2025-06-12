@@ -36,7 +36,7 @@
   },
   "restaurant-api-gateway": {
     "resource_type": "api_gateway",
-    "deploy_stage": "/api/v1",
+    "deploy_stage": "api/v1",
     "dependencies": [],
     "resources": {
       "/auth/sign-up": {
@@ -98,7 +98,16 @@
         "type": "String"
       }
     ],
-    "client": {},
+    "client": {
+      "client_name": "client-app",
+      "generate_secret": false,
+      "explicit_auth_flows": [
+        "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+        "ALLOW_CUSTOM_AUTH",
+        "ALLOW_USER_SRP_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH"
+      ]
+    },
     "tags": {}
   }
 }
