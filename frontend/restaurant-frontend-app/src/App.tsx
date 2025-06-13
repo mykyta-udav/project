@@ -5,21 +5,17 @@ import AuthLayout from './layouts/AuthLayout';
 import HomePage from './pages/HomePage';
 import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
-import ProtectedRoute from './components/ProtectedRoute';
+// import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }>
+          <Route element={<MainLayout />}>
             <Route index element={<HomePage />} />
           </Route>
-          
+
           <Route element={<AuthLayout />}>
             <Route path='login' element={<LoginPage />} />
             <Route path='register' element={<RegisterPage />} />
