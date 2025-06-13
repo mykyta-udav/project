@@ -1,72 +1,59 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-    darkMode: ["class"],
-    content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./src/**/*.{ts,tsx}'],
   theme: {
-  	extend: {
+    extend: {
       fontFamily: {
-        'poppins': ['Poppins', 'system-ui', 'sans-serif'],
+        sans: ['Poppins'],
       },
-      spacing: {
-        '18': '4.5rem', // 72px
-        '120': '30rem', // 480px
+      fontSize: {
+        h1: ['48px', { lineHeight: '48px', fontWeight: '500' }],
+        h2: ['24px', { lineHeight: '40px', fontWeight: '500' }],
+        h3: ['18px', { lineHeight: '32px', fontWeight: '500' }],
+        'block-title': ['14px', { lineHeight: '24px', fontWeight: '300' }],
+        'body-bold': ['14px', { lineHeight: '24px', fontWeight: '500' }],
+        body: ['14px', { lineHeight: '24px', fontWeight: '300' }],
+        'button-primary': ['14px', { lineHeight: '24px', fontWeight: '700' }],
+        'button-secondary': ['14px', { lineHeight: '24px', fontWeight: '500' }],
+        caption: ['12px', { lineHeight: '16px', fontWeight: '300' }],
+        link: ['12px', { lineHeight: '16px', fontWeight: '700' }],
+        navigation: ['20px', { lineHeight: '32px', fontWeight: '500' }],
       },
-  		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
-  		},
-  		colors: {
-        // Brand colors
-        brand: {
-          green: '#00AD0C',
-          dark: '#232323',
+      fontWeight: {
+        light: 300,
+        normal: 400,
+        medium: 500,
+        bold: 700,
+      },
+      colors: {
+        neutral: {
+          0: '#FFFFFF',
+          100: '#F7F7F7',
+          200: '#DADADA',
+          400: '#898989',
+          600: '#575757',
+          900: '#232323',
         },
-  			background: 'hsl(var(--background))',
-  			foreground: 'hsl(var(--foreground))',
-  			card: {
-  				DEFAULT: 'hsl(var(--card))',
-  				foreground: 'hsl(var(--card-foreground))'
-  			},
-  			popover: {
-  				DEFAULT: 'hsl(var(--popover))',
-  				foreground: 'hsl(var(--popover-foreground))'
-  			},
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
-  			},
-  			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
-  			},
-  			muted: {
-  				DEFAULT: 'hsl(var(--muted))',
-  				foreground: 'hsl(var(--muted-foreground))'
-  			},
-  			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
-  			},
-  			destructive: {
-  				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
-  			},
-  			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
-  			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
-  			}
-  		}
-  	}
+        green: {
+          100: '#E9FFEA',
+          200: '#00AD0C',
+          300: '#008209',
+          400: '#006907',
+        },
+        blue: {
+          100: '#DEE9FF',
+          400: '#0E53E9',
+        },
+        orange: {
+          100: '#FFF2D4',
+          400: '#FFAE00',
+        },
+        red: {
+          100: '#FCE9ED',
+          400: '#D70B0B',
+        },
+      },
+    },
   },
-  plugins: [require("tailwindcss-animate")],
-} 
+  plugins: [require('tailwindcss-animate')],
+};
