@@ -1,6 +1,5 @@
 import type { SignUpRequest, SignInRequest, SignUpResponse, SignInResponse, ApiError } from './api';
 
-// Mock user storage 
 interface MockUser {
   id: string;
   firstName: string;
@@ -11,9 +10,7 @@ interface MockUser {
   createdAt: Date;
 }
 
-// In-memory storage for mock users
 let mockUsers: MockUser[] = [
-  // Pre-seeded admin user for testing
   {
     id: '1',
     firstName: 'Admin',
@@ -23,7 +20,6 @@ let mockUsers: MockUser[] = [
     role: 'ADMIN',
     createdAt: new Date(),
   },
-  // Pre-seeded client user for testing
   {
     id: '2',
     firstName: 'John',
@@ -35,7 +31,6 @@ let mockUsers: MockUser[] = [
   },
 ];
 
-// Helper function to generate mock JWT token
 const generateMockToken = (user: MockUser): string => {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(JSON.stringify({
@@ -49,18 +44,16 @@ const generateMockToken = (user: MockUser): string => {
   return `${header}.${payload}.${signature}`;
 };
 
-// Helper function to simulate network delay
+
 const delay = (ms: number = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Mock API functions
+
 export const mockAuthAPI = {
   signUp: async (data: SignUpRequest): Promise<SignUpResponse> => {
     console.log('🔄 Mock API: Sign up request', data);
     
-    // Simulate network delay
     await delay();
 
-    // Validate required fields
     if (!data.firstName || !data.lastName || !data.email || !data.password) {
       throw {
         message: 'All fields are required',
@@ -68,7 +61,6 @@ export const mockAuthAPI = {
       } as ApiError;
     }
 
-    // Check if user already exists
     const existingUser = mockUsers.find(user => user.email.toLowerCase() === data.email.toLowerCase());
     if (existingUser) {
       throw {
@@ -77,7 +69,7 @@ export const mockAuthAPI = {
       } as ApiError;
     }
 
-    // Create new user
+
     const newUser: MockUser = {
       id: (mockUsers.length + 1).toString(),
       firstName: data.firstName,
@@ -88,7 +80,6 @@ export const mockAuthAPI = {
       createdAt: new Date(),
     };
 
-    // Add to mock storage
     mockUsers.push(newUser);
 
     console.log('Mock API: User registered successfully', { email: newUser.email, role: newUser.role });
@@ -100,11 +91,9 @@ export const mockAuthAPI = {
 
   signIn: async (data: SignInRequest): Promise<SignInResponse> => {
     console.log('Mock API: Sign in request', { email: data.email });
-    
-    // Simulate network delay
+
     await delay();
 
-    // Validate required fields
     if (!data.email || !data.password) {
       throw {
         message: 'Email and password are required',
@@ -112,7 +101,6 @@ export const mockAuthAPI = {
       } as ApiError;
     }
 
-    // Find user by email
     const user = mockUsers.find(u => u.email.toLowerCase() === data.email.toLowerCase());
     if (!user) {
       throw {
@@ -121,7 +109,6 @@ export const mockAuthAPI = {
       } as ApiError;
     }
 
-    // Check password
     if (user.password !== data.password) {
       throw {
         message: 'Invalid email or password',
@@ -129,7 +116,6 @@ export const mockAuthAPI = {
       } as ApiError;
     }
 
-    // Generate token
     const accessToken = generateMockToken(user);
 
     console.log(' Mock API: User signed in successfully', { 
@@ -148,7 +134,7 @@ export const mockAuthAPI = {
   signOut: async (): Promise<void> => {
     console.log('Mock API: Sign out request');
     
-    // Simulate network delay
+  
     await delay(200);
 
     console.log('Mock API: User signed out successfully');
@@ -158,7 +144,6 @@ export const mockAuthAPI = {
   },
 };
 
-// Helper function to get all mock users (for debugging)
 export const getMockUsers = () => {
   return mockUsers.map(user => ({
     id: user.id,
@@ -170,7 +155,6 @@ export const getMockUsers = () => {
   }));
 };
 
-// Helper function to reset mock data
 export const resetMockData = () => {
   mockUsers = [
     {

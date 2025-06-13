@@ -1,21 +1,20 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'https://f2qn18zbzh.execute-api.ap-south-1.amazonaws.com/api';
 
-// Create axios instance with default config
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-// Request interceptor to add auth token to requests
+// add auth token to requests
 api.interceptors.request.use(
   (config) => {
     const token = tokenManager.getToken();
     if (token) {
-      // Ensure headers object exists before setting Authorization
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -26,24 +25,22 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for better error handling
+// error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Server responded with error status
       throw {
         message: error.response.data?.message || `HTTP ${error.response.status}`,
         status: error.response.status,
       } as ApiError;
     } else if (error.request) {
-      // Network error
+      // network 
       throw {
         message: 'Network error. Please check if the server is running.',
         status: 0,
       } as ApiError;
     } else {
-      // Something else happened
       throw {
         message: error.message || 'An error occurred',
         status: 0,
@@ -52,7 +49,6 @@ api.interceptors.response.use(
   }
 );
 
-// Types for API requests and responses
 export interface SignUpRequest {
   firstName: string;
   lastName: string;
@@ -80,7 +76,6 @@ export type ApiError = {
   status?: number;
 };
 
-// Authentication API functions
 export const authAPI = {
   signUp: async (data: SignUpRequest): Promise<SignUpResponse> => {
     const response = await api.post<SignUpResponse>('/auth/sign-up', data);
@@ -98,14 +93,13 @@ export const authAPI = {
       try {
         await api.post<void>('/auth/sign-out');
       } catch (error) {
-        // Even if backend logout fails, we'll clear local storage
         console.warn('Backend logout failed:', error);
       }
     }
   },
 };
 
-// Token management utilities
+// token management utilities
 export const tokenManager = {
   setToken: (token: string) => {
     localStorage.setItem('authToken', token);
@@ -124,10 +118,7 @@ export const tokenManager = {
   },
 };
 
-// Export the configured axios instance for other API calls
 export default api;
-
-
 
 // import axios from 'axios';
 // import { mockAuthAPI } from './mockApi';
