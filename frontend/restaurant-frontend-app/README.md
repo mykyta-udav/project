@@ -1,54 +1,166 @@
-# React + TypeScript + Vite
+# Style Guide - Green & Tasty Restaurant App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
 
-Currently, two official plugins are available:
+This document outlines the reusable styles and patterns established to maintain consistency and avoid code duplication across the application.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Brand Colors
 
-## Expanding the ESLint configuration
+The brand colors are defined in `tailwind.config.js` and can be used throughout the application:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```css
+/* Available as Tailwind classes */
+text-brand-green    /* #00AD0C - Primary green */
+text-brand-dark     /* #232323 - Dark text */
+border-brand-green  /* Green borders */
+bg-brand-green      /* Green backgrounds */
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Typography
+
+Use the predefined typography classes from `index.css`:
+
+### Headers
+
+- `.text-h1` - Main page headings (48px, medium)
+- `.text-h2` - Section headings (24px, medium)
+- `.text-h3` - Subsection headings (18px, medium)
+
+### Body Text
+
+- `.text-navigation` - Navigation links (20px, medium)
+- `.text-body-text` - Emphasized body text (14px, medium)
+- `.text-body` - Regular body text (14px, light)
+- `.text-button-primary` - Primary button text (14px, bold)
+- `.text-button-secondary` - Secondary button text (14px, medium)
+
+### Small Text
+
+- `.text-caption` - Small descriptive text (12px, light)
+- `.text-link` - Small links (12px, bold)
+
+## Component Classes
+
+### Header Components
+
+```css
+.header-container     /* Main header wrapper */
+.header-content       /* Header content layout */
+.logo-container       /* Logo section wrapper */
+.logo-icon           /* Logo icon container */
+.logo-text           /* Logo text styling */
+.logo-green          /* Green part of logo */
+.logo-dark           /* Dark part of logo */
+.nav-container       /* Navigation wrapper */
+.nav-links-wrapper   /* Navigation links container */
+.nav-link            /* Base navigation link */
+.nav-link-active     /* Active navigation state */
+.nav-link-inactive   /* Inactive navigation state */
+.sign-in-wrapper     /* Sign in button container */
+.btn-sign-in         /* Sign in button styling */
+```
+
+### Button Components
+
+```css
+.btn-primary         /* Primary action buttons */
+.btn-secondary       /* Secondary action buttons */
+```
+
+## Custom Spacing
+
+Custom spacing values are defined in `tailwind.config.js`:
+
+```css
+h-18    /* 72px height - Used for header */
+ml-120  /* 480px margin - Used for sign-in positioning */
+```
+
+## Usage Examples
+
+### Creating a New Navigation Link
+
+```tsx
+// Active link
+<a href="#" className="nav-link-active mr-4">
+  Page Name
+</a>
+
+// Inactive link
+<a href="#" className="nav-link-inactive">
+  Page Name
+</a>
+```
+
+### Using Brand Colors
+
+```tsx
+// Green text
+<span className="text-brand-green">Green Text</span>
+
+// Dark text
+<span className="text-brand-dark">Dark Text</span>
+
+// Green border
+<div className="border border-brand-green">Content</div>
+```
+
+### Typography Consistency
+
+```tsx
+// Page heading
+<h1 className="text-h1">Page Title</h1>
+
+// Navigation text
+<a className="text-navigation">Navigation Item</a>
+
+// Body text
+<p className="text-body">Regular paragraph text</p>
+```
+
+## Font Setup
+
+- **Poppins**: Used for headings and navigation (`font-poppins`)
+- **Inter**: Used for body text (default)
+
+Both fonts are imported in `index.css` and configured in `tailwind.config.js`.
+
+## Benefits of This Approach
+
+1. **Consistency**: All similar elements use the same styling
+2. **Maintainability**: Change one class definition to update all instances
+3. **Reusability**: Easy to apply consistent styling to new components
+4. **Scalability**: Easy to extend with new component classes
+5. **Performance**: Smaller CSS bundle due to class reuse
+
+## Adding New Component Classes
+
+When creating new reusable components, follow this pattern in `index.css`:
+
+```css
+@layer components {
+  .component-name {
+    @apply tailwind-classes-here;
+  }
+
+  .component-variant {
+    @apply component-name additional-classes;
+  }
+}
+```
+
+## Color Palette Extension
+
+To add new brand colors, update `tailwind.config.js`:
 
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+colors: {
+  brand: {
+    green: '#00AD0C',
+    dark: '#232323',
+    // Add new colors here
+    light: '#F5F5F5',
+    accent: '#FF6B35',
+  }
+}
 ```
