@@ -2,8 +2,8 @@ package com.restaurantbackendapp.handler.impl;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.EndpointHandler;
@@ -25,7 +25,7 @@ public class GetTablesHandler implements EndpointHandler {
     }
 
     @Override
-    public APIGatewayProxyResponseEvent handle(APIGatewayV2HTTPEvent requestEvent, Context context) {
+    public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
         try {
 //            Map<String, String> queryParams = requestEvent.getQueryStringParameters();
 //            String locationId = queryParams != null ? queryParams.get("locationId") : null;

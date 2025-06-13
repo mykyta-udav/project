@@ -18,6 +18,7 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 import static com.syndicate.deployment.model.environment.ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID;
 
 //@DependsOn(resourceType = ResourceType.COGNITO_USER_POOL, name = "${booking_userpool}")
+@DependsOn(name = "restaurant-user-pool", resourceType = ResourceType.COGNITO_USER_POOL)
 @LambdaHandler(
     lambdaName = "restaurant-api-handler",
 	roleName = "restaurant-api-handler-role",
@@ -27,16 +28,16 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 )
 @EnvironmentVariables(value = {
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
-		@EnvironmentVariable(key = "COGNITO_ID", value = "${restaurant-user-pool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
-		@EnvironmentVariable(key = "CLIENT_ID", value = "${restaurant-user-pool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)}
+		@EnvironmentVariable(key = "COGNITO_ID", value = "restaurant-user-pool", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
+		@EnvironmentVariable(key = "CLIENT_ID", value = "restaurant-user-pool", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)}
 )
-public class RestaurantApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+public class RestaurantApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 	private final Application application = DaggerApplication.create();
 	private final EndpointHandler generalHandler = application.getGeneralApiHandler();
 	private final Map<String, String> corsHeaders = application.getCorsHeaders();
 
 	@Override
-	public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent requestEvent, Context context) {
+	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
 		return generalHandler.handle(requestEvent, context).withHeaders(corsHeaders);
 	}
 }

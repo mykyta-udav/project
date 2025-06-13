@@ -1,8 +1,8 @@
 package com.restaurantbackendapp.handler.impl;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restaurantbackendapp.dto.SignInRequestDto;
 import com.restaurantbackendapp.dto.SignInResponseDto;
@@ -25,12 +25,12 @@ public class SignInHandler implements EndpointHandler {
     public SignInHandler(@Named("cognitoClient") CognitoIdentityProviderClient cognitoClient) {
         this.cognitoClient = cognitoClient;
 
-        this.userPoolId = System.getenv("USER_POOL_ID");
-        this.userPoolClientId = System.getenv("USER_POOL_CLIENT_ID");
+        this.userPoolId = System.getenv("COGNITO_ID");
+        this.userPoolClientId = System.getenv("CLIENT_ID");
     }
 
     @Override
-    public APIGatewayProxyResponseEvent handle(APIGatewayV2HTTPEvent requestEvent, Context context) {
+    public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
 
         // Parse the request body to get email and password
         SignInRequestDto requestDto;
@@ -38,6 +38,9 @@ public class SignInHandler implements EndpointHandler {
             requestDto = objectMapper.readValue(requestEvent.getBody(), SignInRequestDto.class);
         }
         catch (Exception e) {
+            System.err.println("Error parsing JSON: " + e.getMessage());
+            System.err.println("Raw request body: " + requestEvent.getBody());
+
             //TODO: make a reasonable return statement
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(400)
@@ -57,7 +60,11 @@ public class SignInHandler implements EndpointHandler {
 
         AdminInitiateAuthResponse authResponse = cognitoClient.adminInitiateAuth(authRequest);
 
+        System.out.println(authResponse);
+
         AuthenticationResultType authResult = authResponse.authenticationResult();
+
+        System.out.println(authResult);
 
         // Get user groups and role
         AdminListGroupsForUserRequest groupsRequest = AdminListGroupsForUserRequest.builder()
