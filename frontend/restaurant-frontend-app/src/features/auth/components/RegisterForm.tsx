@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { InputField } from '@/components/ui/input';
 import eyeOpenedIcon from '@/assets/icons/eye-opened.png';
 import eyeClosedIcon from '@/assets/icons/eye-closed.png';
+import { authAPI } from '@/services/api';
+import type { ApiError } from '@/services/api';
 
 interface PasswordValidationResult {
   main: string;
@@ -122,6 +124,9 @@ const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [apiError, setApiError] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleBlur = (
     field: 'firstName' | 'lastName' | 'email' | 'password' | 'confirmPassword'
   ): void => {
@@ -159,7 +164,7 @@ const RegisterForm = () => {
     );
   }, [firstName, lastName, email, password, confirmPassword]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setTouched({
@@ -170,17 +175,47 @@ const RegisterForm = () => {
       confirmPassword: true,
     });
 
-    if (isValid) {
-      console.log('User registered successfully:', {
+    // Reset API error
+    setApiError('');
+
+    if (!isValid) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await authAPI.signUp({
         firstName,
         lastName,
         email,
         password,
       });
 
+      console.log('User registered successfully');
+      
+      // Redirect to login page
       setTimeout(() => {
         navigate('/login');
       }, 100);
+      
+    } catch (error) {
+      const apiError = error as ApiError;
+      
+      if (apiError.status === 409) {
+        // Email already exists
+        setApiError('An account with this email already exists.');
+      } else if (apiError.status === 0) {
+        // Network error
+        setApiError('Unable to connect to server. Please try again.');
+      } else {
+        // Other errors
+        setApiError(apiError.message || 'Registration failed. Please try again.');
+      }
+      
+      console.error('Registration error:', apiError);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -190,6 +225,17 @@ const RegisterForm = () => {
         <p className='text-sm text-neutral-900 sm:text-base'>LET'S GET YOU STARTED</p>
         <h2 className='text-h3 text-neutral-900 sm:text-h2'>Create an Account</h2>
       </div>
+
+      {apiError && (
+        <div className='mb-8 flex w-full flex-wrap items-center gap-2 rounded-lg bg-[#FCE9ED] p-4'>
+          <p
+            className='text-[14px] font-[300] leading-[24px] text-[#B70B0B]'
+            style={{ fontFamily: 'Poppins' }}
+          >
+            {apiError}
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className='w-full'>
         <div className='mb-6 flex flex-col gap-4 sm:flex-row'>
@@ -400,9 +446,9 @@ const RegisterForm = () => {
           variant='primary'
           size='extra-large'
           className='w-full bg-green-200 text-white'
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
         >
-          Create an Account
+          {isSubmitting ? 'Creating Account...' : 'Create Account'}
         </Button>
       </form>
 

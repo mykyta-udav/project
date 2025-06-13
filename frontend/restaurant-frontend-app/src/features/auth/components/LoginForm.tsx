@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-// import { Link, useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { InputField } from '@/components/ui/input';
+import { authAPI } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
+import type { ApiError } from '@/services/api';
 
 type LoginError = 'none' | 'empty' | 'invalid' | 'locked';
 
@@ -21,6 +23,9 @@ const validatePassword = (password: string): string => {
 };
 
 const LoginForm = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<LoginError>('none');
@@ -44,8 +49,6 @@ const LoginForm = () => {
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
 
-    // Only show validation errors for empty fields when touched
-    // For invalid/locked states, show different messages
     if (loginError === 'invalid' || loginError === 'locked') {
       setErrors({
         email: 'Incorrect email or password. Try again or create an account.',
@@ -59,21 +62,7 @@ const LoginForm = () => {
     }
   }, [email, password, loginError]);
 
-  // error state for testing
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setTouched({ email: true, password: true });
-  //   setLoginError('invalid');
-  // };
-
-  // locked account error state
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setTouched({ email: true, password: true });
-  //   setLoginError('locked');
-  // };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setTouched({
@@ -91,21 +80,50 @@ const LoginForm = () => {
       return;
     }
 
-    // Simulate login logic
-    console.log('Login submitted', { email, password });
+    try {
+      const response = await authAPI.signIn({ email, password });
+      
+      // Properly type the role to match our User interface
+      const userRole = response.role === 'ADMIN' ? 'ADMIN' : 'CLIENT';
+      
+      // Use the auth context to manage login state
+      login(response.accessToken, {
+        username: response.username,
+        role: userRole,
+      });
 
-    const loginSuccess = true; // This would come from API response
+      // Reset error state
+      setLoginError('none');
+      setLoginAttempts(0);
 
-    if (!loginSuccess) {
+      // Redirect to main page using React Router
+      navigate('/', { replace: true });
+      
+    } catch (error) {
+      const apiError = error as ApiError;
+      
+      // Increment login attempts
       setLoginAttempts((prev) => prev + 1);
-      if (loginAttempts + 1 >= 3) {
-        setLoginError('locked');
+      
+      // Handle different error cases
+      if (apiError.status === 401 || apiError.status === 403) {
+        if (loginAttempts + 1 >= 3) {
+          setLoginError('locked');
+        } else {
+          setLoginError('invalid');
+        }
+      } else if (apiError.status === 0) {
+        // Network error
+        setErrors({
+          email: 'Unable to connect to server. Please try again.',
+          password: 'Unable to connect to server. Please try again.',
+        });
       } else {
+        // Other errors
         setLoginError('invalid');
       }
-    } else {
-      setLoginError('none');
-      window.location.href = '/';
+      
+      console.error('Login error:', apiError);
     }
   };
 
