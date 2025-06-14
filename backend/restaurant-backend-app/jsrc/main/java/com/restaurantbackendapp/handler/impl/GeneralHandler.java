@@ -4,10 +4,13 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.restaurantbackendapp.handler.EndpointHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class GeneralHandler implements EndpointHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralHandler.class);
     private final EndpointHandler notFoundHandler;
     private final Map<String, EndpointHandler> handlerMap;
 
@@ -18,10 +21,8 @@ public class GeneralHandler implements EndpointHandler {
 
     @Override
     public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
-        // Construct the route key based on the HTTP method and path. This key is used to look up the appropriate handler.
-        // For example, a GET request to /files would have a route key of "GET:/files".
-        // The @IntoMap and @StringKey annotations in the HandlersModule.class should be used to define the route key for each handler.
         String routeKey = requestEvent.getHttpMethod() + ":" + requestEvent.getPath();
+        LOGGER.info("Route key: {}", routeKey);
 
         return handlerMap.getOrDefault(routeKey, notFoundHandler).handle(requestEvent, context);
     }

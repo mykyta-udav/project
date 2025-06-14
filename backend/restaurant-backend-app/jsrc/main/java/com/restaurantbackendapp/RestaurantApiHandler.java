@@ -11,6 +11,8 @@ import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.annotations.resources.DependsOn;
 import com.syndicate.deployment.model.ResourceType;
 import com.syndicate.deployment.model.RetentionSetting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import static com.syndicate.deployment.model.environment.ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID;
@@ -25,20 +27,22 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 	logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
 @EnvironmentVariables(value = {
-		@EnvironmentVariable(key = "TABLES_TABLE", value = "${tables_table}"),
-		@EnvironmentVariable(key = "RESERVATIONS_TABLES", value = "${reservations_table}"),
+		@EnvironmentVariable(key = "LOCATIONS_TABLE", value = "${locations_table}"),
+		@EnvironmentVariable(key = "RESERVATIONS_TABLE", value = "${reservations_table}"),
 		@EnvironmentVariable(key = "REGION", value = "${region}")
 //		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
 //		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)
 }
 )
 public class RestaurantApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+	private static final Logger LOGGER = LoggerFactory.getLogger(RestaurantApiHandler.class);
 	private final Application application = DaggerApplication.create();
 	private final EndpointHandler generalHandler = application.getGeneralApiHandler();
 	private final Map<String, String> corsHeaders = application.getCorsHeaders();
 
 	@Override
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
+		LOGGER.info("Processing request: {}", requestEvent);
 		return generalHandler.handle(requestEvent, context).withHeaders(corsHeaders);
 	}
 }
