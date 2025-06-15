@@ -63,7 +63,7 @@
     },
     "resources": {
       "/auth/sign-up": {
-        "enable_cors": false,
+        "enable_cors": true,
         "POST": {
           "authorization_type": "NONE",
           "integration_type": "lambda",
@@ -78,7 +78,7 @@
         }
       },
       "/auth/sign-in": {
-        "enable_cors": false,
+        "enable_cors": true,
         "POST": {
           "authorization_type": "NONE",
           "integration_type": "lambda",
