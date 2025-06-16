@@ -5,11 +5,11 @@ import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.impl.GeneralHandler;
 import com.restaurantbackendapp.handler.impl.GetTablesHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
+import com.restaurantbackendapp.repository.ReservationRepository;
 import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.StringKey;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class HandlersModule {
     @Provides
     @IntoMap
     @StringKey("GET:/bookings/tables")
-    public EndpointHandler provideGetTablesHandler(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient, Gson gson) {
-        return new GetTablesHandler(dynamoDbClient, gson);
+    public EndpointHandler provideGetTablesHandler(ReservationRepository repo, Gson gson) {
+        return new GetTablesHandler(repo, gson);
     }
 }

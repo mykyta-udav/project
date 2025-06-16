@@ -6,7 +6,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.google.gson.Gson;
 import dagger.Module;
 import dagger.Provides;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -16,14 +15,14 @@ public class UtilsModule {
 
     @Singleton
     @Provides
-    Gson provideGson() {
+    public Gson provideGson() {
         return new Gson();
     }
 
     @Singleton
     @Provides
     @Named("cors")
-    Map<String, String> provideCorsHeaders() {
+    public Map<String, String> provideCorsHeaders() {
         return Map.of(
                 "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
                 "Access-Control-Allow-Origin", "*",
@@ -35,7 +34,7 @@ public class UtilsModule {
     @Singleton
     @Provides
     @Named("dynamoDbClient")
-    public AmazonDynamoDB initializeDynamoDBClient() {
+    public AmazonDynamoDB provideDynamoDBClient() {
         return AmazonDynamoDBClientBuilder.standard()
                 .withRegion(System.getenv("REGION"))
                 .withClientConfiguration(new ClientConfiguration()
