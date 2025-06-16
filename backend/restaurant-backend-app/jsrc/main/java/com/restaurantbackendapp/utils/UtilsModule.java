@@ -16,7 +16,6 @@ import java.util.Map;
 
 @Module
 public class UtilsModule {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UtilsModule.class);
 
     @Singleton
     @Provides
@@ -40,11 +39,8 @@ public class UtilsModule {
     @Provides
     @Named("dynamoDbClient")
     public AmazonDynamoDB provideDynamoDBClient() {
-        LOGGER.info("Initializing DynamoDB client");
-        LOGGER.info("Using region: ap-south-1");
-
         return AmazonDynamoDBClientBuilder.standard()
-                .withRegion("ap-south-1")
+                .withRegion(System.getenv("REGION"))
                 .withClientConfiguration(new ClientConfiguration()
                         .withConnectionTimeout(2000)
                         .withRequestTimeout(5000))

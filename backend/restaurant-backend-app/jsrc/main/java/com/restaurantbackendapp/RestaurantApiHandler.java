@@ -9,6 +9,7 @@ import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.annotations.resources.DependsOn;
+import com.syndicate.deployment.model.DeploymentRuntime;
 import com.syndicate.deployment.model.ResourceType;
 import com.syndicate.deployment.model.RetentionSetting;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
     lambdaName = "restaurant-api-handler",
 	roleName = "restaurant-api-handler-role",
 	isPublishVersion = true,
+	runtime = DeploymentRuntime.JAVA17,
 	aliasName = "${lambdas_alias_name}",
 	logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
@@ -35,14 +37,12 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 }
 )
 public class RestaurantApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-	private static final Logger LOGGER = LoggerFactory.getLogger(RestaurantApiHandler.class);
 	private final Application application = DaggerApplication.create();
 	private final EndpointHandler generalHandler = application.getGeneralApiHandler();
 	private final Map<String, String> corsHeaders = application.getCorsHeaders();
 
 	@Override
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
-		LOGGER.info("Processing request: {}", requestEvent);
 		return generalHandler.handle(requestEvent, context).withHeaders(corsHeaders);
 	}
 }
