@@ -1,5 +1,6 @@
 package com.restaurantbackendapp.handler;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.impl.GeneralHandler;
 import com.restaurantbackendapp.handler.impl.GetTablesHandler;
