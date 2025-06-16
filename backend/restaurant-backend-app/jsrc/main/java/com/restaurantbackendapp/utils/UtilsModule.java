@@ -4,12 +4,8 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.google.gson.Gson;
-import com.restaurantbackendapp.handler.impl.GetTablesHandler;
 import dagger.Module;
 import dagger.Provides;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
