@@ -24,8 +24,8 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 	logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
 @EnvironmentVariables(value = {
-		@EnvironmentVariable(key = "TABLES_TABLE", value = "${tables_table}"),
-		@EnvironmentVariable(key = "RESERVATIONS_TABLES", value = "${reservations_table}"),
+		/*@EnvironmentVariable(key = "TABLES_TABLE", value = "${tables_table}"),
+		@EnvironmentVariable(key = "RESERVATIONS_TABLES", value = "${reservations_table}"),*/
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
 		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
 		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)}
