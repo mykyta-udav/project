@@ -1,6 +1,7 @@
 package com.restaurantbackendapp.repository;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.restaurantbackendapp.repository.impl.LocationRepositoryImpl;
 import com.restaurantbackendapp.repository.impl.ReservationRepositoryImpl;
 import dagger.Module;
 import dagger.Provides;
@@ -14,5 +15,11 @@ public class RepoModule {
     @Provides
     public ReservationRepository provideReservationRepository(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient) {
         return new ReservationRepositoryImpl(dynamoDbClient);
+    }
+
+    @Singleton
+    @Provides
+    public LocationRepository provideLocationRepository(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient) {
+        return new LocationRepositoryImpl(dynamoDbClient);
     }
 }

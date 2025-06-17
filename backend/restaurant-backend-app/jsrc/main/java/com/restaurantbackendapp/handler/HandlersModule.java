@@ -1,17 +1,17 @@
 package com.restaurantbackendapp.handler;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.impl.GeneralHandler;
-import com.restaurantbackendapp.handler.impl.GetTablesHandler;
+import com.restaurantbackendapp.handler.impl.GetAvailableTablesHandler;
+import com.restaurantbackendapp.handler.impl.GetLocationAddressesListHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
+import com.restaurantbackendapp.repository.LocationRepository;
 import com.restaurantbackendapp.handler.impl.SignUpHandler;
 import com.restaurantbackendapp.repository.ReservationRepository;
 import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.StringKey;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -40,7 +40,15 @@ public class HandlersModule {
     @IntoMap
     @StringKey("GET:/bookings/tables")
     public EndpointHandler provideGetTablesHandler(ReservationRepository repo, Gson gson) {
-        return new GetTablesHandler(repo, gson);
+        return new GetAvailableTablesHandler(repo, gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/locations/select-options")
+    public EndpointHandler provideGetLocationAddressesListHandler(LocationRepository repo, Gson gson) {
+        return new GetLocationAddressesListHandler(repo, gson);
     }
 
     @Singleton
