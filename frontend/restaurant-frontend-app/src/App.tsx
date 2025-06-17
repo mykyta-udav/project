@@ -5,7 +5,7 @@ import AuthLayout from './layouts/AuthLayout';
 import HomePage from './pages/HomePage';
 import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
-// import ProtectedRoute from './components/ProtectedRoute';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -14,11 +14,12 @@ function App() {
         <Routes>
           <Route element={<MainLayout />}>
             <Route index element={<HomePage />} />
+            <Route path='/profile' element={<ProfilePage />} />
           </Route>
 
           <Route element={<AuthLayout />}>
-            <Route path='login' element={<LoginPage />} />
-            <Route path='register' element={<RegisterPage />} />
+            <Route path='/login' element={<LoginPage />} />
+            <Route path='/register' element={<RegisterPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

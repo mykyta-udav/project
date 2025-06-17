@@ -1,23 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { tokenManager } from '@/services/api';
-// import type { ApiError } from '@/services/api';
-
-interface User {
-  username: string;
-  role: 'CLIENT' | 'ADMIN';
-}
-
-interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-}
+import type { AuthState, LoginCredentials, RegisterCredentials } from '@/types/auth';
+import { UserRole } from '@/types/auth';
+import { authService } from '@/services/mockApi';
+import { storageUtils } from '@/utils/storage';
 
 interface AuthContextType extends AuthState {
-  login: (token: string, user: User) => void;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
+  hasRole: (role: UserRole) => boolean;
+  hasAnyRole: (roles: UserRole[]) => boolean;
+  isCustomer: () => boolean;
+  isWaiter: () => boolean;
+  isVisitor: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,11 +34,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = () => {
       try {
-        const token = tokenManager.getToken();
-        const userStr = localStorage.getItem('user');
+        const token = storageUtils.getToken();
+        const user = storageUtils.getUser();
         
-        if (token && userStr) {
-          const user = JSON.parse(userStr) as User;
+        if (token && user) {
           setAuthState({
             isAuthenticated: true,
             user,
@@ -54,9 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        // Clear invalid data
-        tokenManager.removeToken();
-        localStorage.removeItem('user');
+        storageUtils.clearAuth();
         setAuthState(prev => ({ ...prev, isLoading: false }));
       }
     };
@@ -64,20 +57,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = (token: string, user: User) => {
-    tokenManager.setToken(token);
-    localStorage.setItem('user', JSON.stringify(user));
-    setAuthState({
-      isAuthenticated: true,
-      user,
-      token,
-      isLoading: false,
-    });
+  const login = async (credentials: LoginCredentials): Promise<void> => {
+    try {
+      const { user, token } = await authService.login(credentials);
+      
+      storageUtils.setToken(token);
+      storageUtils.setUser(user);
+      
+      setAuthState({
+        isAuthenticated: true,
+        user,
+        token,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  };
+
+  const register = async (credentials: RegisterCredentials): Promise<void> => {
+    try {
+      const { user, token } = await authService.register(credentials);
+      
+      storageUtils.setToken(token);
+      storageUtils.setUser(user);
+      
+      setAuthState({
+        isAuthenticated: true,
+        user,
+        token,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
-    tokenManager.removeToken();
-    localStorage.removeItem('user');
+    authService.logout();
+    storageUtils.clearAuth();
     setAuthState({
       isAuthenticated: false,
       user: null,
@@ -86,8 +106,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
+  // Role-based access control helpers
+  const hasRole = (role: UserRole): boolean => {
+    return authState.user?.role === role;
+  };
+
+  const hasAnyRole = (roles: UserRole[]): boolean => {
+    return authState.user?.role ? roles.includes(authState.user.role) : false;
+  };
+
+  const isCustomer = (): boolean => hasRole(UserRole.CUSTOMER);
+  const isWaiter = (): boolean => hasRole(UserRole.WAITER);
+  
+  // Note: isVisitor is maintained for completeness but visitors are unauthorized users
+  // This function will typically return false since visitors don't authenticate
+  const isVisitor = (): boolean => hasRole(UserRole.VISITOR);
+
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout }}>
+    <AuthContext.Provider value={{ 
+      ...authState, 
+      login, 
+      register,
+      logout, 
+      hasRole, 
+      hasAnyRole,
+      isCustomer,
+      isWaiter,
+      isVisitor
+    }}>
       {children}
     </AuthContext.Provider>
   );
