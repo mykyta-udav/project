@@ -1,5 +1,9 @@
 package com.restaurantbackendapp.handler.impl;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
+import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -13,6 +17,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Map;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -23,18 +28,23 @@ public class SignUpHandler implements EndpointHandler {
     CognitoIdentityProviderClient cognitoClient;
     String userPoolId;
     Gson gson;
+    AmazonDynamoDB dynamoDbClient;
 
     static String GROUP_CUSTOMER = "Customer";
+    private static final String GROUP_WAITER = "Waiter";
     static int TEMP_PASSWORD_LENGTH = 12;
+    String TABLE_NAME = System.getenv("WAITERS_TABLE");
 
     @Inject
     public SignUpHandler(
             @Named("cognitoClient") CognitoIdentityProviderClient cognitoClient,
             @Named("userPoolId") String userPoolId,
+            @Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient,
             Gson gson
     ) {
         this.cognitoClient = cognitoClient;
         this.userPoolId = userPoolId;
+        this.dynamoDbClient = dynamoDbClient;
         this.gson = gson;
     }
 
@@ -63,6 +73,7 @@ public class SignUpHandler implements EndpointHandler {
             if (!listUsersResponse.users().isEmpty()) {
                 return response(400, "Email already exists");
             }
+            String roleGroup = isWaiter(email) ? GROUP_WAITER : GROUP_CUSTOMER;
 
             AttributeType emailAttr = AttributeType.builder().name("email").value(email).build();
             AttributeType emailVerifiedAttr = AttributeType.builder().name("email_verified").value("true").build();
@@ -93,10 +104,22 @@ public class SignUpHandler implements EndpointHandler {
             AdminAddUserToGroupRequest addToGroupRequest = AdminAddUserToGroupRequest.builder()
                     .userPoolId(userPoolId)
                     .username(email)
-                    .groupName(GROUP_CUSTOMER)
+                    .groupName(roleGroup)
                     .build();
 
             cognitoClient.adminAddUserToGroup(addToGroupRequest);
+
+            AttributeType roleAttr = AttributeType.builder()
+                    .name("custom:role")
+                    .value(roleGroup)
+                    .build();
+
+            AdminUpdateUserAttributesRequest updateAttrs = AdminUpdateUserAttributesRequest.builder()
+                    .userPoolId(userPoolId)
+                    .username(email)
+                    .userAttributes(roleAttr)
+                    .build();
+            cognitoClient.adminUpdateUserAttributes(updateAttrs);
 
             return response(201, "User registered successfully");
 
@@ -136,5 +159,23 @@ public class SignUpHandler implements EndpointHandler {
             sb.append(PASSWORD_ALLOW_BASE.charAt(rndCharAt));
         }
         return sb.toString();
+    }
+
+
+    private boolean isWaiter(String email) {
+        try {
+            Map<String, AttributeValue> key = new HashMap<>();
+            key.put("email", new AttributeValue().withS(email));
+
+            GetItemRequest getItemRequest = new GetItemRequest()
+                    .withTableName(TABLE_NAME)
+                    .withKey(key);
+
+            GetItemResult itemResult = dynamoDbClient.getItem(getItemRequest);
+
+            return itemResult.getItem() != null && !itemResult.getItem().isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

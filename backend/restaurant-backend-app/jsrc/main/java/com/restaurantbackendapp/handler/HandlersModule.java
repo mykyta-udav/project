@@ -1,11 +1,7 @@
 package com.restaurantbackendapp.handler;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.google.gson.Gson;
-import com.restaurantbackendapp.handler.impl.GeneralHandler;
-import com.restaurantbackendapp.handler.impl.GetTablesHandler;
-import com.restaurantbackendapp.handler.impl.NotFoundHandler;
-import com.restaurantbackendapp.handler.impl.SignUpHandler;
+import com.restaurantbackendapp.handler.impl.*;
 import com.restaurantbackendapp.repository.ReservationRepository;
 import dagger.Module;
 import dagger.Provides;
@@ -49,5 +45,13 @@ public class HandlersModule {
     @StringKey("POST:/auth/sign-up")
     public EndpointHandler provideSignUpHandler(SignUpHandler handler) {
         return handler;
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/users/profile")
+    public EndpointHandler provideGetUserProfileHandler (Gson gson, UserContextResolver userContextResolver){
+        return new GetUserProfileHandler(gson, userContextResolver);
     }
 }

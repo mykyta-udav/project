@@ -12,10 +12,9 @@ import com.syndicate.deployment.annotations.resources.DependsOn;
 import com.syndicate.deployment.model.DeploymentRuntime;
 import com.syndicate.deployment.model.ResourceType;
 import com.syndicate.deployment.model.RetentionSetting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+
 import static com.syndicate.deployment.model.environment.ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID;
 import static com.syndicate.deployment.model.environment.ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID;
 
@@ -31,6 +30,7 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 @EnvironmentVariables(value = {
 		@EnvironmentVariable(key = "LOCATIONS_TABLE", value = "${locations_table}"),
 		@EnvironmentVariable(key = "RESERVATIONS_TABLE", value = "${reservations_table}"),
+		@EnvironmentVariable(key = "WAITERS_TABLE", value = "${waiters_table}"),
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
 		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
 		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)
@@ -40,6 +40,14 @@ public class RestaurantApiHandler implements RequestHandler<APIGatewayProxyReque
 	private final Application application = DaggerApplication.create();
 	private final EndpointHandler generalHandler = application.getGeneralApiHandler();
 	private final Map<String, String> corsHeaders = application.getCorsHeaders();
+	private static boolean groupsInitialized = false;
+
+	public RestaurantApiHandler() {
+		if (!groupsInitialized) {
+			application.cognitoGroupInitializer();
+			groupsInitialized = true;
+		}
+	}
 
 	@Override
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
