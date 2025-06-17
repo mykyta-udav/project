@@ -72,6 +72,11 @@
             <artifactId>dagger</artifactId>
             <version>${dagger.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.13.0</version>
+        </dependency>
     </dependencies>
 
     <build>
