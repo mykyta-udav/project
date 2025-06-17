@@ -10,9 +10,14 @@ import com.restaurantbackendapp.exception.InvalidQueryParameterException;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.model.Table;
 import com.restaurantbackendapp.repository.ReservationRepository;
+import org.apache.commons.lang3.StringUtils;
+import software.amazon.awssdk.annotations.NotNull;
+
 import javax.inject.Inject;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +27,7 @@ import java.util.Map;
  * This handler interacts with DynamoDB to fetch table availability information and location details.
  * It processes API Gateway requests and returns available tables that match the given parameters.
  */
-public class GetTablesHandler implements EndpointHandler {
+public class GetAvailableTablesHandler implements EndpointHandler {
     public static final String LOCATION_ID = "locationId";
     public static final String DATE = "date";
     public static final String TIME = "time";
@@ -35,7 +40,7 @@ public class GetTablesHandler implements EndpointHandler {
     private final Gson gson;
 
     @Inject
-    public GetTablesHandler(ReservationRepository repository, Gson gson) {
+    public GetAvailableTablesHandler(ReservationRepository repository, Gson gson) {
         this.repository = repository;
         this.gson = gson;
     }
@@ -50,13 +55,13 @@ public class GetTablesHandler implements EndpointHandler {
      *         400 for invalid parameters, or 500 for server errors
      */
     @Override
-    public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
+    public APIGatewayProxyResponseEvent handle(@NotNull APIGatewayProxyRequestEvent requestEvent, @NotNull Context context) {
         try {
             TableRequestQueryParams params = extractTableRequestParams(requestEvent);
             QueryResult queryResult = repository.fetchAvailableTables(params, context);
             String locationAddress = repository.fetchLocationAddress(params, context);
 
-            Map<String, Table> tableMap = buildTableAvailabilityMap(queryResult, locationAddress, params);
+            Map<String, Table> tableMap = buildTableAvailabilityMap(queryResult, locationAddress);
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
@@ -85,9 +90,7 @@ public class GetTablesHandler implements EndpointHandler {
     private TableRequestQueryParams extractTableRequestParams(APIGatewayProxyRequestEvent requestEvent) {
         Map<String, String> queryParams = requestEvent.getQueryStringParameters();
 
-        if (queryParams == null || queryParams.get(LOCATION_ID) == null) {
-            throw new InvalidQueryParameterException("locationId is required parameters.");
-        }
+        validateParameters(queryParams);
 
         String locationId = queryParams.get(LOCATION_ID);
         String date = queryParams.get(DATE);
@@ -104,7 +107,7 @@ public class GetTablesHandler implements EndpointHandler {
      * @param locationAddress The address of the restaurant location
      * @return Map of table numbers to Table objects with availability information
      */
-    private Map<String, Table> buildTableAvailabilityMap(QueryResult queryResult, String locationAddress, TableRequestQueryParams params) {
+    private Map<String, Table> buildTableAvailabilityMap(QueryResult queryResult, String locationAddress) {
         Map<String, Table> tableMap = new HashMap<>();
 
         queryResult.getItems().forEach(item -> {
@@ -126,4 +129,44 @@ public class GetTablesHandler implements EndpointHandler {
         });
         return tableMap;
     }
+
+    private void validateParameters(Map<String, String> queryParams) {
+        if (queryParams == null || queryParams.isEmpty()) {
+            throw new InvalidQueryParameterException("Query parameters cannot be null or empty.");
+        }
+
+        String locationId = queryParams.get(LOCATION_ID);
+        if (StringUtils.isBlank(locationId)) {
+            throw new InvalidQueryParameterException("Location ID is required.");
+        }
+
+        String date = queryParams.get(DATE);
+        if (StringUtils.isNotBlank(date) && !isValidDateFormat(date)) {
+            throw new InvalidQueryParameterException("Invalid date format. Expected format: YYYY-MM-DD");
+        }
+
+        String time = queryParams.get(TIME);
+        if (StringUtils.isNotBlank(time) && !isValidTimeFormat(time)) {
+            throw new InvalidQueryParameterException("Invalid time format. Expected format: HH:mm");
+        }
+    }
+
+    private boolean isValidDateFormat(String date) {
+        try {
+            LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    private boolean isValidTimeFormat(String time) {
+        try {
+            LocalTime.parse(time, DateTimeFormatter.ISO_TIME);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
 }
