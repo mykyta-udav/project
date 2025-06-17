@@ -6,6 +6,10 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.google.gson.Gson;
 import dagger.Module;
 import dagger.Provides;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
+
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -41,5 +45,29 @@ public class UtilsModule {
                         .withConnectionTimeout(2000)
                         .withRequestTimeout(5000))
                 .build();
+    }
+
+    @Singleton
+    @Provides
+    @Named("cognitoClient")
+    public CognitoIdentityProviderClient initializeCognitoClient() {
+        return CognitoIdentityProviderClient.builder()
+                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                .region(Region.of(System.getenv("REGION")))
+                .build();
+    }
+
+    @Provides
+    @Singleton
+    @Named("userPoolId")
+    String provideUserPoolId() {
+        return System.getenv("COGNITO_ID");
+    }
+
+    @Provides
+    @Singleton
+    @Named("userPoolClientId ")
+    String provideUserPoolClientId() {
+        return System.getenv("CLIENT_ID");
     }
 }

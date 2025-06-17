@@ -6,6 +6,7 @@ import com.restaurantbackendapp.handler.impl.GetAvailableTablesHandler;
 import com.restaurantbackendapp.handler.impl.GetLocationAddressesListHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
 import com.restaurantbackendapp.repository.LocationRepository;
+import com.restaurantbackendapp.handler.impl.SignUpHandler;
 import com.restaurantbackendapp.repository.ReservationRepository;
 import dagger.Module;
 import dagger.Provides;
@@ -48,5 +49,13 @@ public class HandlersModule {
     @StringKey("GET:/locations/select-options")
     public EndpointHandler provideGetLocationAddressesListHandler(LocationRepository repo, Gson gson) {
         return new GetLocationAddressesListHandler(repo, gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("POST:/auth/sign-up")
+    public EndpointHandler provideSignUpHandler(SignUpHandler handler) {
+        return handler;
     }
 }
