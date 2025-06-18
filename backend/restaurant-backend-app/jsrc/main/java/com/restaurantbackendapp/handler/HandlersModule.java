@@ -59,7 +59,7 @@ public class HandlersModule {
     @Provides
     @IntoMap
     @StringKey("GET:/users/profile")
-    public EndpointHandler provideGetUserProfileHandler (Gson gson, UserContextResolver userContextResolver){
-        return new GetUserProfileHandler(gson, userContextResolver);
+    public EndpointHandler provideGetUserProfileHandler(GetUserProfileHandler handler){
+        return handler;
     }
 }
