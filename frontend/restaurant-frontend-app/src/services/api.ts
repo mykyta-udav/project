@@ -5,7 +5,7 @@ import type { Dish } from '@/types/dish';
 import type { Location } from '@/types/location';
 import type { FeedbackResponse, FeedbackType } from '@/types/feedback';
 
-const API_BASE_URL = 'https://f2qn18zbzh.execute-api.ap-south-1.amazonaws.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
