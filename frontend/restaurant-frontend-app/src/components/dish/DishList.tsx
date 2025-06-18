@@ -18,7 +18,7 @@ const DishList = () => {
         setError('Failed to load popular dishes');
         console.error('Error fetching popular dishes:', err);
 
-        // Mock data for development since API endpoint is not implemented yet
+        // Mock data for development 
         const mockDishes: DishType[] = [
           {
             name: 'Fresh Strawberry Mint Salad',
@@ -72,7 +72,7 @@ const DishList = () => {
 
   return (
     <div className='w-full'>
-      <div className='flex gap-6 overflow-x-auto pb-4 pl-12 pt-10'>
+      <div className='flex gap-12 overflow-x-auto pb-4 pl-12 pt-10'>
         {dishes.map((dish, index) => (
           <div key={index}>
             <Dish dish={dish} />

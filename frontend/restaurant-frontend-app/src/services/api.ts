@@ -3,6 +3,7 @@ import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from '
 import { UserRole } from '@/types/auth';
 import type { Dish } from '@/types/dish';
 import type { Location } from '@/types/location';
+import type { FeedbackResponse, FeedbackType } from '@/types/feedback';
 
 const API_BASE_URL = 'https://f2qn18zbzh.execute-api.ap-south-1.amazonaws.com/api';
 
@@ -239,6 +240,16 @@ export const dishesAPI = {
       throw error;
     }
   },
+
+  getSpecialityDishes: async (locationId: string): Promise<Dish[]> => {
+    try {
+      const response = await api.get<Dish[]>(`/locations/${locationId}/speciality-dishes`);
+      return response.data;
+    } catch (error: unknown) {
+      console.error('Failed to fetch speciality dishes:', error);
+      throw error;
+    }
+  },
 };
 
 export const locationsAPI = {
@@ -248,6 +259,39 @@ export const locationsAPI = {
       return response.data;
     } catch (error: unknown) {
       console.error('Failed to fetch locations:', error);
+      throw error;
+    }
+  },
+
+  getLocationById: async (id: string): Promise<Location> => {
+    try {
+      const response = await api.get<Location>(`/locations/${id}`);
+      return response.data;
+    } catch (error: unknown) {
+      console.error(`Failed to fetch location ${id}:`, error);
+      throw error;
+    }
+  },
+};
+
+export const feedbackAPI = {
+  getFeedbacks: async (
+    locationId: string, 
+    type: FeedbackType, 
+    page: number = 0, 
+    size: number = 20
+  ): Promise<FeedbackResponse> => {
+    try {
+      const response = await api.get<FeedbackResponse>(`/locations/${locationId}/feedbacks`, {
+        params: {
+          type,
+          page,
+          size
+        }
+      });
+      return response.data;
+    } catch (error: unknown) {
+      console.error('Failed to fetch feedbacks:', error);
       throw error;
     }
   },
