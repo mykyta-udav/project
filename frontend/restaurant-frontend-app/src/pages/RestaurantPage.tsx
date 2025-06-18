@@ -6,6 +6,7 @@ import locationIcon from '../assets/icons/location.png';
 import starIcon from '../assets/icons/star-01.png';
 import SpecialtyDishList from '../components/dish/SpecialtyDishList';
 import CustomerReviews from '../components/review/CustomerReviews';
+import SortDropdown, { type SortOption } from '../components/review/SortDropdown';
 import { FeedbackType } from '@/types/feedback';
 
 const RestaurantPage = () => {
@@ -14,6 +15,7 @@ const RestaurantPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeReviewTab, setActiveReviewTab] = useState<FeedbackType>(FeedbackType.SERVICE_QUALITY);
+  const [sortOrder, setSortOrder] = useState<SortOption>('rating-high');
 
   const reviewTabs = [
     { type: FeedbackType.SERVICE_QUALITY, label: 'Service' },
@@ -89,6 +91,10 @@ const RestaurantPage = () => {
 
   const handleReviewTabChange = (tab: FeedbackType) => {
     setActiveReviewTab(tab);
+  };
+
+  const handleSortChange = (newSortOrder: SortOption) => {
+    setSortOrder(newSortOrder);
   };
 
   if (loading) {
@@ -201,20 +207,24 @@ const RestaurantPage = () => {
         
         {/* Tabs with 40px gap from title */}
         <div className='mt-10'>
-          <div className='flex gap-8 mb-8 border-b border-gray-200'>
-            {reviewTabs.map((tab) => (
-              <button
-                key={tab.type}
-                onClick={() => handleReviewTabChange(tab.type)}
-                className={`pb-4 text-lg font-medium transition-colors ${
-                  activeReviewTab === tab.type
-                    ? 'text-[#00AD0C] border-b border-[#00AD0C]'
-                    : 'text-[#232323] hover:text-[#00AD0C]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className='flex justify-between items-center mb-8 border-b border-gray-200'>
+            <div className='flex gap-8'>
+              {reviewTabs.map((tab) => (
+                <button
+                  key={tab.type}
+                  onClick={() => handleReviewTabChange(tab.type)}
+                  className={`pb-4 text-lg font-medium transition-colors ${
+                    activeReviewTab === tab.type
+                      ? 'text-[#00AD0C] border-b border-[#00AD0C]'
+                      : 'text-[#232323] hover:text-[#00AD0C]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            
+            <SortDropdown value={sortOrder} onValueChange={handleSortChange} />
           </div>
         </div>
 
@@ -222,6 +232,7 @@ const RestaurantPage = () => {
           <CustomerReviews 
             locationId={restaurant.id} 
             activeTab={activeReviewTab}
+            sortOrder={sortOrder}
           />
         </div>
       </section>

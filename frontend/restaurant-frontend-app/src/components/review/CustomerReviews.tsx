@@ -3,10 +3,12 @@ import { feedbackAPI } from '@/services/api';
 import { FeedbackType, type Feedback } from '@/types/feedback';
 import ReviewCard from './ReviewCard';
 import Pagination from './Pagination';
+import type { SortOption } from './SortDropdown';
 
 interface CustomerReviewsProps {
   locationId: string;
   activeTab: FeedbackType;
+  sortOrder: SortOption;
 }
 
 const mockServiceReviews: Feedback[] = [
@@ -135,7 +137,7 @@ const mockCuisineReviews: Feedback[] = [
   }
 ];
 
-const CustomerReviews = ({ locationId, activeTab }: CustomerReviewsProps) => {
+const CustomerReviews = ({ locationId, activeTab, sortOrder }: CustomerReviewsProps) => {
   const [serviceReviews, setServiceReviews] = useState<Feedback[]>([]);
   const [cuisineReviews, setCuisineReviews] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,14 +191,35 @@ const CustomerReviews = ({ locationId, activeTab }: CustomerReviewsProps) => {
     setCurrentPage(1);
   }, [activeTab]);
 
+  // Reset page when sort order changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortOrder]);
+
   // Get current reviews based on active tab
   const currentReviews = activeTab === FeedbackType.SERVICE_QUALITY ? serviceReviews : cuisineReviews;
   
+  // Sort reviews based on sort order
+  const sortedReviews = [...currentReviews].sort((a, b) => {
+    switch (sortOrder) {
+      case 'rating-high':
+        return parseInt(b.rate) - parseInt(a.rate);
+      case 'rating-low':
+        return parseInt(a.rate) - parseInt(b.rate);
+      case 'newest':
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      case 'oldest':
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      default:
+        return 0;
+    }
+  });
+  
   // Calculate pagination
-  const totalPages = Math.ceil(currentReviews.length / reviewsPerPage);
+  const totalPages = Math.ceil(sortedReviews.length / reviewsPerPage);
   const startIndex = (currentPage - 1) * reviewsPerPage;
   const endIndex = startIndex + reviewsPerPage;
-  const paginatedReviews = currentReviews.slice(startIndex, endIndex);
+  const paginatedReviews = sortedReviews.slice(startIndex, endIndex);
 
   if (loading) {
     return (
@@ -209,7 +232,7 @@ const CustomerReviews = ({ locationId, activeTab }: CustomerReviewsProps) => {
   return (
     <div className='w-full'>
       {/* Reviews */}
-      {error && currentReviews.length === 0 ? (
+      {error && sortedReviews.length === 0 ? (
         <div className='flex h-40 items-center justify-center'>
           <div className='text-red-500'>Failed to load reviews</div>
         </div>
