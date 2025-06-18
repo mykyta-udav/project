@@ -105,7 +105,7 @@ public class SignInHandler implements EndpointHandler {
 
 
         SignInResponseDto responseDto = new SignInResponseDto(
-                authResult.accessToken(),
+                authResult.idToken(),
                 displayName,
                 role
         );
