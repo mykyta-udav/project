@@ -7,11 +7,14 @@
             "logs:CreateLogGroup",
             "logs:CreateLogStream",
             "logs:PutLogEvents",
+            "s3:PutObject",
             "dynamodb:GetItem",
             "dynamodb:Query",
             "dynamodb:PutItem",
             "dynamodb:Batch*",
             "dynamodb:DeleteItem",
+            "dynamodb:Scan",
+            "dynamodb:UpdateItem",
             "ssm:PutParameter",
             "ssm:GetParameter",
             "kms:Decrypt",
@@ -27,7 +30,11 @@
             "cognito-idp:AdminConfirmSignUp",
             "cognito-idp:AdminListGroupsForUser",
             "cognito-idp:AdminGetUser",
-            "cognito-idp:AdminSetUserPassword"
+            "cognito-idp:AdminSetUserPassword",
+            "cognito-idp:AdminAddUserToGroup",
+            "cognito-idp:GetGroup",
+            "cognito-idp:CreateGroup",
+            "cognito-idp:AdminUpdateUserAttributes"
           ],
           "Effect": "Allow",
           "Resource": "*"
@@ -91,6 +98,51 @@
           "default_error_pattern": true,
           "enable_proxy": true
         }
+      },
+      "/bookings/tables": {
+        "enable_cors": false,
+        "GET": {
+          "enable_proxy": true,
+          "authorization_type": "NONE",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      },
+      "/users/profile": {
+        "enable_cors": true,
+        "GET": {
+          "enable_proxy": true,
+          "authorization_type": "authorizer",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      },
+      "/locations/select-options": {
+        "enable_cors": false,
+        "GET": {
+          "enable_proxy": true,
+          "authorization_type": "NONE",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
       }
     },
     "tags": {}
@@ -133,5 +185,47 @@
       ]
     },
     "tags": {}
+  },
+  "${locations_table}": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "locationId",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": [],
+    "tags": {}
+  },
+  "${reservations_table}": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "reservationId",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [
+      {
+        "name": "LocationDateIndex",
+        "index_key_name": "locationId",
+        "index_key_type": "S"
+      },
+      {
+        "name": "DateTableNumberTimeIndex",
+        "index_key_name": "date#tableNumber#time",
+        "index_key_type": "S"
+      }
+    ],
+    "autoscaling": [],
+    "tags": {}
+  },
+  "Emails": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "email",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": [],
+    "tags": {
+    }
   }
 }

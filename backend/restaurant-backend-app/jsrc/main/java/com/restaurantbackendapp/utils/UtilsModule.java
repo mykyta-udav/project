@@ -4,6 +4,7 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.google.gson.Gson;
+import com.restaurantbackendapp.handler.impl.CognitoGroupInitializer;
 import dagger.Module;
 import dagger.Provides;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -19,14 +20,14 @@ public class UtilsModule {
 
     @Singleton
     @Provides
-    Gson provideGson() {
+    public Gson provideGson() {
         return new Gson();
     }
 
     @Singleton
     @Provides
     @Named("cors")
-    Map<String, String> provideCorsHeaders() {
+    public Map<String, String> provideCorsHeaders() {
         return Map.of(
                 "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
                 "Access-Control-Allow-Origin", "*",
@@ -38,7 +39,7 @@ public class UtilsModule {
     @Singleton
     @Provides
     @Named("dynamoDbClient")
-    public AmazonDynamoDB initializeDynamoDBClient() {
+    public AmazonDynamoDB provideDynamoDBClient() {
         return AmazonDynamoDBClientBuilder.standard()
                 .withRegion(System.getenv("REGION"))
                 .withClientConfiguration(new ClientConfiguration()
@@ -53,7 +54,30 @@ public class UtilsModule {
     public CognitoIdentityProviderClient initializeCognitoClient() {
         return CognitoIdentityProviderClient.builder()
                 .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                .region(Region.of(System.getenv("AWS_REGION")))
+                .region(Region.of(System.getenv("REGION")))
                 .build();
+    }
+
+    @Provides
+    @Singleton
+    @Named("userPoolId")
+    String provideUserPoolId() {
+        return System.getenv("COGNITO_ID");
+    }
+
+    @Provides
+    @Singleton
+    @Named("userPoolClientId")
+    String provideUserPoolClientId() {
+        return System.getenv("CLIENT_ID");
+    }
+
+    @Provides
+    @Singleton
+    @Named("cognitoUserGroup")
+    public CognitoGroupInitializer provideCognitoGroupInitializer(
+            @Named("cognitoClient") CognitoIdentityProviderClient client,
+            @Named("userPoolId") String userPoolId) {
+        return new CognitoGroupInitializer(client, userPoolId);
     }
 }
