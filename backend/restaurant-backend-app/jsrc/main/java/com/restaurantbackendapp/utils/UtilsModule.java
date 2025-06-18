@@ -4,6 +4,7 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.google.gson.Gson;
+import com.restaurantbackendapp.handler.impl.CognitoGroupInitializer;
 import dagger.Module;
 import dagger.Provides;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -66,8 +67,17 @@ public class UtilsModule {
 
     @Provides
     @Singleton
-    @Named("userPoolClientId ")
+    @Named("userPoolClientId")
     String provideUserPoolClientId() {
         return System.getenv("CLIENT_ID");
+    }
+
+    @Provides
+    @Singleton
+    @Named("cognitoUserGroup")
+    public CognitoGroupInitializer provideCognitoGroupInitializer(
+            @Named("cognitoClient") CognitoIdentityProviderClient client,
+            @Named("userPoolId") String userPoolId) {
+        return new CognitoGroupInitializer(client, userPoolId);
     }
 }
