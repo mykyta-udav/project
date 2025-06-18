@@ -36,9 +36,6 @@ public class GetUserProfileHandler implements EndpointHandler {
             }
             context.getLogger().log("Request Context: " + gson.toJson(requestEvent.getRequestContext()));
 
-
-            context.getLogger().log("Claims object: " + gson.toJson(claims));
-
             String firstName = (String) claims.getOrDefault("custom:firstName", "");
             String lastName = (String) claims.getOrDefault("custom:lastName", "");
             String email = (String) claims.getOrDefault("email", "");

@@ -141,10 +141,6 @@
       {
         "name": "lastName",
         "type": "String"
-      },
-      {
-        "name": "role",
-        "type": "String"
       }
     ],
     "client": {

@@ -109,18 +109,6 @@ public class SignUpHandler implements EndpointHandler {
 
             cognitoClient.adminAddUserToGroup(addToGroupRequest);
 
-            AttributeType roleAttr = AttributeType.builder()
-                    .name("custom:role")
-                    .value(roleGroup)
-                    .build();
-
-            AdminUpdateUserAttributesRequest updateAttrs = AdminUpdateUserAttributesRequest.builder()
-                    .userPoolId(userPoolId)
-                    .username(email)
-                    .userAttributes(roleAttr)
-                    .build();
-            cognitoClient.adminUpdateUserAttributes(updateAttrs);
-
             return response(201, "User registered successfully");
 
         } catch (UsernameExistsException e) {
