@@ -94,7 +94,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
         StringBuilder filterExpressionBuilder = new StringBuilder();
 
         if (StringUtils.isNotBlank(params.date())) {
-            appendCondition(filterExpressionBuilder, "#date = :date");
+            filterExpressionBuilder.append("#date = :date") ;
         }
         if (StringUtils.isNotBlank(params.time()) ) {
             appendCondition(filterExpressionBuilder, "#time > :time");
@@ -102,8 +102,12 @@ public class ReservationRepositoryImpl implements ReservationRepository {
         if (StringUtils.isNotBlank(params.guests())) {
             appendCondition(filterExpressionBuilder, "guests >= :guests");
         }
-        appendCondition(filterExpressionBuilder, "#status = :status");
 
+        if (filterExpressionBuilder.isEmpty()) {
+            filterExpressionBuilder.append("#status = :status");
+        } else {
+            appendCondition(filterExpressionBuilder, "#status = :status");
+        }
         return filterExpressionBuilder.toString();
     }
 
