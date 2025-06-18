@@ -4,6 +4,7 @@ import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.restaurantbackendapp.dto.TableRequestQueryParams;
+import com.restaurantbackendapp.model.Reservation;
 
 public interface ReservationRepository {
 
@@ -26,4 +27,10 @@ public interface ReservationRepository {
      * @throws AmazonDynamoDBException if the database query fails
      */
     String fetchLocationAddress(TableRequestQueryParams tableRequestQueryParams, Context context);
+
+    boolean isTableAvailable(String locationId, String tableNumber, String date, String timeFrom, String timeTo, Context context);
+
+    void createReservation(Reservation reservation, Context context);
+
+    String fetchLocationAddressById(String locationId, Context context);
 }

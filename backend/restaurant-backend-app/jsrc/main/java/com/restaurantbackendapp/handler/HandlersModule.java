@@ -62,4 +62,12 @@ public class HandlersModule {
     public EndpointHandler provideGetUserProfileHandler(GetUserProfileHandler handler){
         return handler;
     }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("POST:/bookings/client")
+    public EndpointHandler provideCreateReservationClientHandler(ReservationRepository repo, Gson gson) {
+        return new CreateReservationHandler(repo, gson);
+    }
 }
