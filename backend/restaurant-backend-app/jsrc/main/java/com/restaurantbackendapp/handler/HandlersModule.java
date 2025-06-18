@@ -1,12 +1,8 @@
 package com.restaurantbackendapp.handler;
 
 import com.google.gson.Gson;
-import com.restaurantbackendapp.handler.impl.GeneralHandler;
-import com.restaurantbackendapp.handler.impl.GetAvailableTablesHandler;
-import com.restaurantbackendapp.handler.impl.GetLocationAddressesListHandler;
-import com.restaurantbackendapp.handler.impl.NotFoundHandler;
+import com.restaurantbackendapp.handler.impl.*;
 import com.restaurantbackendapp.repository.LocationRepository;
-import com.restaurantbackendapp.handler.impl.SignUpHandler;
 import com.restaurantbackendapp.repository.ReservationRepository;
 import dagger.Module;
 import dagger.Provides;
@@ -57,5 +53,13 @@ public class HandlersModule {
     @StringKey("POST:/auth/sign-up")
     public EndpointHandler provideSignUpHandler(SignUpHandler handler) {
         return handler;
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/users/profile")
+    public EndpointHandler provideGetUserProfileHandler (Gson gson, UserContextResolver userContextResolver){
+        return new GetUserProfileHandler(gson, userContextResolver);
     }
 }

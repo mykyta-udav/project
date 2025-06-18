@@ -31,7 +31,10 @@
             "cognito-idp:AdminListGroupsForUser",
             "cognito-idp:AdminGetUser",
             "cognito-idp:AdminSetUserPassword",
-            "cognito-idp:AdminAddUserToGroup"
+            "cognito-idp:AdminAddUserToGroup",
+            "cognito-idp:GetGroup",
+            "cognito-idp:CreateGroup",
+            "cognito-idp:AdminUpdateUserAttributes"
           ],
           "Effect": "Allow",
           "Resource": "*"
@@ -67,7 +70,7 @@
     },
     "resources": {
       "/auth/sign-up": {
-        "enable_cors": false,
+        "enable_cors": true,
         "POST": {
           "authorization_type": "NONE",
           "integration_type": "lambda",
@@ -86,6 +89,21 @@
         "GET": {
           "enable_proxy": true,
           "authorization_type": "NONE",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      },
+      "/users/profile": {
+        "enable_cors": true,
+        "GET": {
+          "enable_proxy": true,
+          "authorization_type": "authorizer",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -183,5 +201,16 @@
     ],
     "autoscaling": [],
     "tags": {}
+  },
+  "Emails": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "email",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": [],
+    "tags": {
+    }
   }
 }
