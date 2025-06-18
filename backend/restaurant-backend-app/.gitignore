@@ -2,4 +2,5 @@
 logs/
 .syndicate-config-*/
 .idea
-target
+target/
+restaurant-backend-app.iml
