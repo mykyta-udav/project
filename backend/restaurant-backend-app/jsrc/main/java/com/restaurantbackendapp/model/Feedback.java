@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.List;
-
 @DynamoDBTable(tableName = "dummy")
 @Builder
 @Setter
@@ -19,28 +17,29 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class Location {
+public class Feedback {
     @DynamoDBHashKey
+    private String feedbackId;
+
+    @DynamoDBAttribute
+    private Integer rate;
+
+    @DynamoDBAttribute
+    private String comment;
+
+    @DynamoDBAttribute
+    private String userName;
+
+    @DynamoDBAttribute
+    private String userAvatarUrl;
+
+    @DynamoDBAttribute
+    private String date;
+
+    @DynamoDBAttribute
+    private String type;
+
+    @DynamoDBAttribute
     private String locationId;
 
-    @DynamoDBAttribute
-    private String address;
-
-    @DynamoDBAttribute
-    private String description;
-
-    @DynamoDBAttribute
-    private Integer totalCapacity;
-
-    @DynamoDBAttribute
-    private Integer averageOccupancy;
-
-    @DynamoDBAttribute
-    private String imageUrl;
-
-    @DynamoDBAttribute
-    private Double rating;
-
-    @DynamoDBAttribute
-    private List<String> specialityDishIds;
 }

@@ -9,17 +9,16 @@ import com.restaurantbackendapp.model.Location;
 import com.restaurantbackendapp.repository.LocationRepository;
 import software.amazon.awssdk.annotations.NotNull;
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.List;
 
-public class GetLocationAddressesListHandler implements EndpointHandler {
-    public static final String ADDRESS = "address";
-    public static final String LOCATION_ID = "locationId";
+public class GetMainPageLocationsHandler implements EndpointHandler {
     public static final String ERROR = "Error: ";
     private final LocationRepository repository;
     private final Gson gson;
 
     @Inject
-    public GetLocationAddressesListHandler(LocationRepository repo, Gson gson) {
+    public GetMainPageLocationsHandler(LocationRepository repo, Gson gson) {
         this.repository = repo;
         this.gson = gson;
     }
@@ -27,12 +26,7 @@ public class GetLocationAddressesListHandler implements EndpointHandler {
     @Override
     public APIGatewayProxyResponseEvent handle(@NotNull APIGatewayProxyRequestEvent requestEvent, @NotNull Context context) {
         try {
-            List<Location> locationList = repository.findAllLocationAddresses().stream()
-                    .map(item -> Location.builder()
-                            .locationId(item.getLocationId())
-                            .address(item.getAddress())
-                            .build())
-                    .toList();
+            List<Location> locationList = repository.findAllLocationAddresses();
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)

@@ -18,7 +18,7 @@ import java.util.Map;
 public class ReservationRepositoryImpl implements ReservationRepository {
     public static final String LOCATION_ID = "locationId";
     public static final String AVAILABLE = "AVAILABLE";
-    public static final String ADDRESS = "locationAddress";
+    public static final String ADDRESS = "address";
     public static final String DB_CLIENT = "dynamoDbClient";
     public static final String TIME = "time";
     public static final String ERROR = "Error: ";
