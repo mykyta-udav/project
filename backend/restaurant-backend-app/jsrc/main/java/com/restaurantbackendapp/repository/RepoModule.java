@@ -38,8 +38,11 @@ public class RepoModule {
     @Provides
     public FeedbackRepository provideFeedbackRepository(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient) {
         return new FeedbackRepositoryImpl(dynamoDbClient);
+    }
 
-    public WaiterRepository provideWaiterRepository(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient){
+    @Singleton
+    @Provides
+    public WaiterRepository provideWaiterRepository(@Named("dynamoDbClient") AmazonDynamoDB dynamoDbClient) {
         return new WaiterRepositoryImpl(dynamoDbClient);
     }
 }
