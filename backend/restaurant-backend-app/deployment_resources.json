@@ -291,7 +291,6 @@
     "autoscaling": [],
     "tags": {}
   },
-<<<<<<< backend/restaurant-backend-app/deployment_resources.json
   "${dishes_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "dishId",
@@ -327,7 +326,7 @@
     ],
     "autoscaling": [],
     "tags": {}
-=======
+  },
   "Emails": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "email",
@@ -338,6 +337,5 @@
     "autoscaling": [],
     "tags": {
     }
->>>>>>> backend/restaurant-backend-app/deployment_resources.json
   }
 }
