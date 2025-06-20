@@ -12,7 +12,6 @@ import com.restaurantbackendapp.model.Table;
 import com.restaurantbackendapp.repository.ReservationRepository;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.annotations.NotNull;
-
 import javax.inject.Inject;
 import java.time.LocalDate;
 import java.time.LocalTime;

@@ -30,6 +30,8 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 @EnvironmentVariables(value = {
 		@EnvironmentVariable(key = "LOCATIONS_TABLE", value = "${locations_table}"),
 		@EnvironmentVariable(key = "RESERVATIONS_TABLE", value = "${reservations_table}"),
+		@EnvironmentVariable(key = "DISHES_TABLE", value = "${dishes_table}"),
+		@EnvironmentVariable(key = "FEEDBACK_TABLE", value = "${feedbacks_table}"),
 		@EnvironmentVariable(key = "WAITERS_TABLE", value = "${waiters_table}"),
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
 		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),

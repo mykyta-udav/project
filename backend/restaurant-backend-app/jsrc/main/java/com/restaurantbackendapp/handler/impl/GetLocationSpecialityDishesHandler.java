@@ -11,32 +11,33 @@ import software.amazon.awssdk.annotations.NotNull;
 import javax.inject.Inject;
 import java.util.List;
 
-public class GetLocationAddressesListHandler implements EndpointHandler {
-    public static final String ADDRESS = "address";
+public class GetLocationSpecialityDishesHandler implements EndpointHandler {
     public static final String LOCATION_ID = "locationId";
     public static final String ERROR = "Error: ";
+    public static final String SPECIALITY_DISH_IDS = "specialityDishIds";
     private final LocationRepository repository;
     private final Gson gson;
 
     @Inject
-    public GetLocationAddressesListHandler(LocationRepository repo, Gson gson) {
-        this.repository = repo;
+    public GetLocationSpecialityDishesHandler(LocationRepository repository, Gson gson) {
+        this.repository = repository;
         this.gson = gson;
     }
 
     @Override
     public APIGatewayProxyResponseEvent handle(@NotNull APIGatewayProxyRequestEvent requestEvent, @NotNull Context context) {
         try {
-            List<Location> locationList = repository.findAllLocationAddresses().stream()
-                    .map(item -> Location.builder()
-                            .locationId(item.getLocationId())
-                            .address(item.getAddress())
-                            .build())
-                    .toList();
+            context.getLogger().log(String.format("Speciality dishes for location id %s", requestEvent.getPathParameters().get("id")));
+            List<Location> locationList = repository.findSpecialityDishesByLocationId(requestEvent.getPathParameters().get("id"));
+
+            List<String> specialityDishIds = locationList.stream()
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Location not found"))
+                    .getSpecialityDishIds();
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(gson.toJson(locationList));
+                    .withBody(gson.toJson(specialityDishIds));
         } catch (Exception e) {
             context.getLogger().log(ERROR + e.getMessage());
             return new APIGatewayProxyResponseEvent()
