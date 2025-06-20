@@ -59,7 +59,7 @@ public class HandlersModule {
         return handler;
     }
 
-        @Singleton
+    @Singleton
     @Provides
     @IntoMap
     @StringKey("GET:/bookings/tables")
