@@ -11,6 +11,7 @@ import com.restaurantbackendapp.handler.impl.GetRestaurantFeedbacksHandler;
 import com.restaurantbackendapp.handler.impl.GetUserProfileHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
 import com.restaurantbackendapp.handler.impl.SignInHandler;
+import com.restaurantbackendapp.handler.impl.SignUpHandler;
 import com.restaurantbackendapp.repository.DishRepository;
 import com.restaurantbackendapp.repository.FeedbackRepository;
 import com.restaurantbackendapp.repository.LocationRepository;
@@ -51,6 +52,14 @@ public class HandlersModule {
     }
 
     @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("POST:/auth/sign-up")
+    public EndpointHandler provideSignUpHandler(SignUpHandler handler) {
+        return handler;
+    }
+
+        @Singleton
     @Provides
     @IntoMap
     @StringKey("GET:/bookings/tables")

@@ -88,20 +88,8 @@
         "enable_cors": true,
         "POST": {
           "authorization_type": "NONE",
-          "integration_type": "mock",
-          "api_key_required": false,
-          "method_request_parameters": {},
-          "integration_request_body_template": {},
-          "responses": [],
-          "integration_responses": [],
-          "default_error_pattern": true
-        }
-      },
-      "/auth/sign-in": {
-        "enable_cors": false,
-        "POST": {
-          "authorization_type": "NONE",
-          "integration_type": "mock",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
           "method_request_parameters": {},
           "integration_request_body_template": {},
