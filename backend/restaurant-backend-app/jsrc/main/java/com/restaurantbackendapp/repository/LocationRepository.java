@@ -1,7 +1,10 @@
 package com.restaurantbackendapp.repository;
 
-import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.restaurantbackendapp.model.Location;
+
+import java.util.List;
 
 public interface LocationRepository {
-    ScanResult findAllLocationAddresses();
+    List<Location> findAllLocationAddresses();
+    List<Location> findSpecialityDishesByLocationId(String locationId);
 }

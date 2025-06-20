@@ -17,7 +17,12 @@ public class GeneralHandler implements EndpointHandler {
 
     @Override
     public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
-        String routeKey = requestEvent.getHttpMethod() + ":" + requestEvent.getPath();
+        String path = requestEvent.getPath();
+        // Convert actual path like "/locations/1/speciality-dishes" to template "/locations/{id}/speciality-dishes"
+        String templatePath = path.replaceAll("/locations/\\d+/", "/locations/{id}/");
+        String routeKey = requestEvent.getHttpMethod() + ":" + templatePath;
+
+        context.getLogger().log(String.format("Handling request for route key %s", routeKey));
 
         return handlerMap.getOrDefault(routeKey, notFoundHandler).handle(requestEvent, context);
     }

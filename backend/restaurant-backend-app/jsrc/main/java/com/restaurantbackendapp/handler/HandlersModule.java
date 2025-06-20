@@ -4,9 +4,14 @@ import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.impl.GeneralHandler;
 import com.restaurantbackendapp.handler.impl.GetAvailableTablesHandler;
 import com.restaurantbackendapp.handler.impl.GetLocationAddressesListHandler;
+import com.restaurantbackendapp.handler.impl.GetLocationSpecialityDishesHandler;
+import com.restaurantbackendapp.handler.impl.GetMainPageLocationsHandler;
+import com.restaurantbackendapp.handler.impl.GetPopularDishesHandler;
+import com.restaurantbackendapp.handler.impl.GetRestaurantFeedbacksHandler;
 import com.restaurantbackendapp.handler.impl.NotFoundHandler;
+import com.restaurantbackendapp.repository.DishRepository;
+import com.restaurantbackendapp.repository.FeedbackRepository;
 import com.restaurantbackendapp.repository.LocationRepository;
-import com.restaurantbackendapp.handler.impl.SignUpHandler;
 import com.restaurantbackendapp.repository.ReservationRepository;
 import dagger.Module;
 import dagger.Provides;
@@ -54,8 +59,32 @@ public class HandlersModule {
     @Singleton
     @Provides
     @IntoMap
-    @StringKey("POST:/auth/sign-up")
-    public EndpointHandler provideSignUpHandler(SignUpHandler handler) {
-        return handler;
+    @StringKey("GET:/locations")
+    public EndpointHandler provideGetMainPageLocationsHandler(LocationRepository repo, Gson gson) {
+        return new GetMainPageLocationsHandler(repo, gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/dishes/popular")
+    public EndpointHandler provideGetPopularDishesHandler(DishRepository repo, Gson gson) {
+        return new GetPopularDishesHandler(repo, gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/locations/{id}/speciality-dishes")
+    public EndpointHandler provideGetLocationSpecialityDishesHandler(LocationRepository repo, Gson gson) {
+        return new GetLocationSpecialityDishesHandler(repo, gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/locations/{id}/feedbacks")
+    public EndpointHandler provideGetRestaurantFeedbacksHandler(FeedbackRepository repo, Gson gson) {
+        return new GetRestaurantFeedbacksHandler(repo, gson);
     }
 }
