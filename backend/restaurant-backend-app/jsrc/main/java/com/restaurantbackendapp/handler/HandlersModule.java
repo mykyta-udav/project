@@ -43,6 +43,14 @@ public class HandlersModule {
     @Singleton
     @Provides
     @IntoMap
+    @StringKey("POST:/auth/sign-in")
+    public EndpointHandler provideSignInHandler(SignInHandler handler) {
+        return handler;
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
     @StringKey("GET:/bookings/tables")
     public EndpointHandler provideGetTablesHandler(ReservationRepository repo, Gson gson) {
         return new GetAvailableTablesHandler(repo, gson);
@@ -86,5 +94,13 @@ public class HandlersModule {
     @StringKey("GET:/locations/{id}/feedbacks")
     public EndpointHandler provideGetRestaurantFeedbacksHandler(FeedbackRepository repo, Gson gson) {
         return new GetRestaurantFeedbacksHandler(repo, gson);
+    }
+
+    @Singleton
+    @Provides
+    @IntoMap
+    @StringKey("GET:/users/profile")
+    public EndpointHandler provideGetUserProfileHandler(GetUserProfileHandler handler){
+        return handler;
     }
 }

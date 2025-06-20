@@ -32,6 +32,7 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 		@EnvironmentVariable(key = "RESERVATIONS_TABLE", value = "${reservations_table}"),
 		@EnvironmentVariable(key = "DISHES_TABLE", value = "${dishes_table}"),
 		@EnvironmentVariable(key = "FEEDBACK_TABLE", value = "${feedbacks_table}"),
+		@EnvironmentVariable(key = "WAITERS_TABLE", value = "${waiters_table}"),
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
 		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
 		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)
@@ -41,6 +42,14 @@ public class RestaurantApiHandler implements RequestHandler<APIGatewayProxyReque
 	private final Application application = DaggerApplication.create();
 	private final EndpointHandler generalHandler = application.getGeneralApiHandler();
 	private final Map<String, String> corsHeaders = application.getCorsHeaders();
+	private static boolean groupsInitialized = false;
+
+	public RestaurantApiHandler() {
+		if (!groupsInitialized) {
+			application.cognitoGroupInitializer();
+			groupsInitialized = true;
+		}
+	}
 
 	@Override
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {

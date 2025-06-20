@@ -17,7 +17,24 @@
             "dynamodb:UpdateItem",
             "ssm:PutParameter",
             "ssm:GetParameter",
-            "kms:Decrypt"
+            "kms:Decrypt",
+            "cognito-idp:DescribeUserPool",
+            "cognito-idp:GetUser",
+            "cognito-idp:ListUsers",
+            "cognito-idp:AdminCreateUser",
+            "cognito-idp:AdminInitiateAuth",
+            "cognito-idp:GetIdentityProviderByIdentifier",
+            "cognito-idp:ListUserPools",
+            "cognito-idp:ListUserPoolClients",
+            "cognito-idp:AdminRespondToAuthChallenge",
+            "cognito-idp:AdminConfirmSignUp",
+            "cognito-idp:AdminListGroupsForUser",
+            "cognito-idp:AdminGetUser",
+            "cognito-idp:AdminSetUserPassword",
+            "cognito-idp:AdminAddUserToGroup",
+            "cognito-idp:GetGroup",
+            "cognito-idp:CreateGroup",
+            "cognito-idp:AdminUpdateUserAttributes"
           ],
           "Effect": "Allow",
           "Resource": "*"
@@ -53,7 +70,22 @@
     },
     "resources": {
       "/auth/sign-up": {
-        "enable_cors": false,
+        "enable_cors": true,
+        "POST": {
+          "authorization_type": "NONE",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true,
+          "enable_proxy": true
+        }
+      },
+      "/auth/sign-in": {
+        "enable_cors": true,
         "POST": {
           "authorization_type": "NONE",
           "integration_type": "mock",
@@ -95,6 +127,21 @@
       },
       "/locations": {
         "enable_cors": false,
+        "GET": {
+          "enable_proxy": true,
+          "authorization_type": "authorizer",
+          "integration_type": "lambda",
+          "lambda_name": "restaurant-api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      },
+      "/users/profile": {
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "authorizer",
@@ -244,6 +291,7 @@
     "autoscaling": [],
     "tags": {}
   },
+<<<<<<< backend/restaurant-backend-app/deployment_resources.json
   "${dishes_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "dishId",
@@ -279,5 +327,17 @@
     ],
     "autoscaling": [],
     "tags": {}
+=======
+  "Emails": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "email",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": [],
+    "tags": {
+    }
+>>>>>>> backend/restaurant-backend-app/deployment_resources.json
   }
 }
