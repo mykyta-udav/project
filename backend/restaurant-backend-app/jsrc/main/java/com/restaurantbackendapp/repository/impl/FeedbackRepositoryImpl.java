@@ -76,12 +76,12 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     private Integer getTotalNumber(Map<String, AttributeValue> expressionAttributeValues) {
         QueryRequest queryRequest = new QueryRequest()
                 .withTableName(System.getenv(FEEDBACK_TABLE))
-                .withIndexName("FeedbacksByTypeIndex") // Use the GSI
+                .withIndexName("FeedbacksByTypeIndex")
                 .withKeyConditionExpression("locationId = :locationId AND #type = :type")
                 .withExpressionAttributeNames(Map.of("#type", "type"))
                 .withExpressionAttributeValues(expressionAttributeValues)
                 .withConsistentRead(false)
-                .withSelect(Select.COUNT); // Only count items
+                .withSelect(Select.COUNT);
 
         QueryResult queryResult = dynamoDbClient.query(queryRequest);
         return queryResult.getCount();
@@ -115,20 +115,19 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
 
         SortObject sortObject = new SortObject(
                 sortDirection,
-                "default",  // Example: assuming nullHandling is "default" for simplicity
-                "asc".equalsIgnoreCase(sortDirection), // Ascending flag
+                "default",
+                "asc".equalsIgnoreCase(sortDirection),
                 sortProperty,
-                true // Assuming sorting is case-insensitive for now
+                true
         );
 
-        // Create PageableObject metadata
         PageableObject pageableObject = new PageableObject(
-                page * size,           // Offset for the first item
-                List.of(sortObject),   // Sorting criteria
-                true,                  // Pagination is applied
-                size,                  // Page size
-                page,                  // Current page number
-                false                  // Pagination is not disabled
+                page * size,
+                List.of(sortObject),
+                true,
+                size,
+                page,
+                false
         );
 
         boolean isLastPage = (lastEvaluatedKey == null);
