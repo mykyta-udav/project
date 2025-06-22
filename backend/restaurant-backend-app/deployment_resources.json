@@ -100,7 +100,7 @@
         }
       },
       "/bookings/tables": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "NONE",
@@ -115,7 +115,7 @@
         }
       },
       "/locations": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "NONE",
@@ -133,7 +133,7 @@
         "enable_cors": true,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "NONE",
+          "authorization_type": "authorizer",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -145,7 +145,7 @@
         }
       },
       "/locations/select-options": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "NONE",
@@ -160,7 +160,7 @@
         }
       },
       "/dishes/popular": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "NONE",
@@ -175,7 +175,7 @@
         }
       },
       "/locations/{id}/speciality-dishes": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "NONE",
@@ -190,7 +190,7 @@
         }
       },
       "/locations/{id}/feedbacks": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "NONE",
