@@ -87,6 +87,7 @@
       "/auth/sign-in": {
         "enable_cors": true,
         "POST": {
+          "enable_proxy": true,
           "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
@@ -99,10 +100,10 @@
         }
       },
       "/bookings/tables": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "authorizer",
+          "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -114,10 +115,10 @@
         }
       },
       "/locations": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "authorizer",
+          "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -144,10 +145,10 @@
         }
       },
       "/locations/select-options": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "authorizer",
+          "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -159,10 +160,10 @@
         }
       },
       "/dishes/popular": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "authorizer",
+          "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -174,10 +175,10 @@
         }
       },
       "/locations/{id}/speciality-dishes": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "authorizer",
+          "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -189,10 +190,10 @@
         }
       },
       "/locations/{id}/feedbacks": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "authorizer",
+          "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "restaurant-api-handler",
           "api_key_required": false,
@@ -230,10 +231,6 @@
       {
         "name": "lastName",
         "type": "String"
-      },
-      {
-        "name": "role",
-        "type": "String"
       }
     ],
     "client": {
@@ -267,7 +264,7 @@
     "write_capacity": 1,
     "global_indexes": [
       {
-        "name": "LocationIndex",
+        "name": "LocationDateIndex",
         "index_key_name": "locationId",
         "index_key_type": "S"
       },

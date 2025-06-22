@@ -15,7 +15,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class GetRestaurantFeedbacksHandler implements EndpointHandler {
-    public static final String ERROR = "Error: ";
+    public static final String ERROR = "Error";
+    public static final String MESSAGE = "message";
+    public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     private final FeedbackRepository repository;
     private final Gson gson;
 
@@ -29,7 +31,6 @@ public class GetRestaurantFeedbacksHandler implements EndpointHandler {
     public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
         try {
             FeedbackPaginationQueryParams queryParams = extractQueryParams(requestEvent);
-            context.getLogger().log("Handle before pagination");
             context.getLogger().log(gson.toJson(queryParams));
 
             PageFeedbackResponse pageFeedbackResponse = repository.getFeedbacks(
@@ -49,7 +50,10 @@ public class GetRestaurantFeedbacksHandler implements EndpointHandler {
             context.getLogger().log(ERROR + Arrays.toString(e.getStackTrace()));
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
-                    .withBody(e.getMessage());
+                    .withBody(gson.toJson(Map.of(
+                            ERROR, INTERNAL_SERVER_ERROR,
+                            MESSAGE, e.getMessage()
+                    )));
         }
     }
 

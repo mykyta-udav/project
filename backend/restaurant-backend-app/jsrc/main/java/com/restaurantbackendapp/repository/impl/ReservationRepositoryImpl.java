@@ -1,10 +1,7 @@
 package com.restaurantbackendapp.repository.impl;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.QueryRequest;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -16,9 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ReservationRepositoryImpl implements ReservationRepository {
-    public static final String LOCATION_ID = "locationId";
     public static final String AVAILABLE = "AVAILABLE";
-    public static final String ADDRESS = "address";
     public static final String DB_CLIENT = "dynamoDbClient";
     public static final String TIME = "time";
     public static final String ERROR = "Error: ";
@@ -26,7 +21,6 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     public static final String STATUS = "status";
     private final AmazonDynamoDB dynamoDbClient;
     public static final String RESERVATIONS_TABLE = "RESERVATIONS_TABLE";
-    public static final String LOCATIONS_TABLE = "LOCATIONS_TABLE";
 
     public ReservationRepositoryImpl(@Named(DB_CLIENT) AmazonDynamoDB dynamoDbClient) {
         this.dynamoDbClient = dynamoDbClient;
@@ -41,33 +35,10 @@ public class ReservationRepositoryImpl implements ReservationRepository {
                 .withFilterExpression(buildFilterExpression(params))
                 .withExpressionAttributeNames(createExpressionAttributeNames(params))
                 .withExpressionAttributeValues(createExpressionAttributeValues(params));
-        try {
+
             QueryResult result = dynamoDbClient.query(queryRequest);
-            context.getLogger().log(String.format("Query successful, items count: %s", result.getCount()));
+            context.getLogger().log(String.format("Tables count: %s", result.getCount()));
             return result;
-        } catch (Exception e) {
-            context.getLogger().log("Failed to execute DynamoDB query" + e.getMessage());
-            throw new AmazonDynamoDBException("Failed to query Reservations table: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public String fetchLocationAddress(TableRequestQueryParams tableRequestQueryParams, Context context) {
-        String tableName = System.getenv(LOCATIONS_TABLE);
-        context.getLogger().log(String.format("Fetching from locations table: %s", tableName));
-
-        GetItemRequest getItemRequest = new GetItemRequest()
-                .withTableName(System.getenv(LOCATIONS_TABLE))
-                .withKey(Map.of(
-                        LOCATION_ID, new AttributeValue().withS(tableRequestQueryParams.locationId())
-                ));
-        try {
-            GetItemResult getItemResult = dynamoDbClient.getItem(getItemRequest);
-            return getItemResult.getItem().get(ADDRESS).getS();
-        } catch (Exception e) {
-            throw new AmazonDynamoDBException("Failed to query Locations table: " + e.getMessage());
-        }
-
     }
 
     private Map<String, AttributeValue> createExpressionAttributeValues(TableRequestQueryParams params) {

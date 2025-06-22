@@ -63,8 +63,8 @@ public class HandlersModule {
     @Provides
     @IntoMap
     @StringKey("GET:/bookings/tables")
-    public EndpointHandler provideGetTablesHandler(ReservationRepository repo, Gson gson) {
-        return new GetAvailableTablesHandler(repo, gson);
+    public EndpointHandler provideGetTablesHandler(ReservationRepository repo, Gson gson,  LocationRepository locRepo) {
+        return new GetAvailableTablesHandler(repo, gson, locRepo);
     }
 
     @Singleton

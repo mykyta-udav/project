@@ -9,11 +9,12 @@ import com.restaurantbackendapp.model.Location;
 import com.restaurantbackendapp.repository.LocationRepository;
 import software.amazon.awssdk.annotations.NotNull;
 import javax.inject.Inject;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class GetMainPageLocationsHandler implements EndpointHandler {
-    public static final String ERROR = "Error: ";
+    public static final String ERROR = "Error";
+    public static final String MESSAGE = "Message";
     private final LocationRepository repository;
     private final Gson gson;
 
@@ -27,6 +28,15 @@ public class GetMainPageLocationsHandler implements EndpointHandler {
     public APIGatewayProxyResponseEvent handle(@NotNull APIGatewayProxyRequestEvent requestEvent, @NotNull Context context) {
         try {
             List<Location> locationList = repository.findAllLocationAddresses();
+            if (locationList.isEmpty()) {
+                context.getLogger().log("No locations found in the repository.");
+                return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(404)
+                        .withBody(gson.toJson(Map.of(
+                                ERROR, "No Locations Found",
+                                MESSAGE, "There are no locations available."))
+                        );
+            }
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
@@ -35,7 +45,10 @@ public class GetMainPageLocationsHandler implements EndpointHandler {
             context.getLogger().log(ERROR + e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
-                    .withBody(e.getMessage());
+                    .withBody(gson.toJson(Map.of(
+                            "error", "Internal Server Error",
+                            "message", e.getMessage()
+                    )));
         }
     }
 }
