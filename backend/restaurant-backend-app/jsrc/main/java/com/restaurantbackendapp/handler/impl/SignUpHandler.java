@@ -48,12 +48,11 @@ public class SignUpHandler implements EndpointHandler {
         try {
             SignUpRequestDto signUpRequest = gson.fromJson(request.getBody(), SignUpRequestDto.class);
 
-            if (signUpRequest == null ||
-                    signUpRequest.getEmail().isBlank() ||
-                    signUpRequest.getPassword().isBlank() ||
-                    signUpRequest.getFirstName().isBlank() ||
-                    signUpRequest.getLastName().isBlank()
-            ) {
+            if (signUpRequest == null
+                    || signUpRequest.getEmail() == null || signUpRequest.getEmail().isBlank()
+                    || signUpRequest.getPassword() == null || signUpRequest.getPassword().isBlank()
+                    || signUpRequest.getFirstName() == null || signUpRequest.getFirstName().isBlank()
+                    || signUpRequest.getLastName() == null || signUpRequest.getLastName().isBlank()) {
                 return response(400, "Email, password, firstName and lastName are required");
             }
 
