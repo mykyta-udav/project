@@ -8,7 +8,7 @@ const HomePage = () => {
     <div>
       <section className='pb-10'>
         <div
-          className='relative min-h-[400px] bg-cover bg-center bg-no-repeat p-6 md:p-12'
+          className='relative h-[440px] bg-cover bg-center bg-no-repeat p-6 md:p-12'
           style={{
             backgroundImage: `url(${mainBannerImage})`,
           }}

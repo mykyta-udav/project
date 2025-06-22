@@ -6,4 +6,9 @@ export interface Location {
   averageOccupancy: string;
   imageUrl: string;
   rating: string;
+}
+
+export interface LocationSelectOption {
+  id: string;
+  address: string;
 } 

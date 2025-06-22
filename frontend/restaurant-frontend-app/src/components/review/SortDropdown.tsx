@@ -1,10 +1,10 @@
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ChevronDown } from 'lucide-react';
 
 export type SortOption = 'rating-high' | 'rating-low' | 'newest' | 'oldest';
 
@@ -21,6 +21,8 @@ const sortOptions = [
 ];
 
 const SortDropdown = ({ value, onValueChange }: SortDropdownProps) => {
+  const currentOption = sortOptions.find(option => option.value === value);
+
   return (
     <div className="flex items-center gap-2">
       <span 
@@ -29,18 +31,23 @@ const SortDropdown = ({ value, onValueChange }: SortDropdownProps) => {
       >
         Sort by:
       </span>
-      <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className="w-[180px] h-8 text-sm border-gray-300">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="w-[180px] h-8 px-6 py-4 rounded-lg bg-white border border-[#DADADA] hover:shadow-[0px_0px_8px_0px_rgba(0,173,12,0.20)] focus:border-[#00AD0C] flex items-center justify-between text-sm outline-none">
+          <span className="text-[#00AD0C] font-bold">{currentOption?.label || 'Select option'}</span>
+          <ChevronDown className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-[180px]">
           {sortOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <DropdownMenuItem 
+              key={option.value} 
+              onClick={() => onValueChange(option.value)}
+              className={`border-0 ${value === option.value ? 'bg-white font-bold' : 'font-normal'}`}
+            >
               {option.label}
-            </SelectItem>
+            </DropdownMenuItem>
           ))}
-        </SelectContent>
-      </Select>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

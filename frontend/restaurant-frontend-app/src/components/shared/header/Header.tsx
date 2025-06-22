@@ -62,7 +62,7 @@ const Header = () => {
             Main page
           </Link>
           <a
-            href='#'
+            href='/book'
             className='text-[16px] font-medium leading-[32px] text-[#232323] hover:text-[#00AD0C] md:text-[18px] lg:text-[20px]'
           >
             Book a Table
@@ -85,7 +85,7 @@ const Header = () => {
             Main page
           </Link>
           <a
-            href='#'
+            href='/book'
             className='mr-4 text-[16px] font-medium leading-[32px] text-[#232323] hover:text-[#00AD0C] md:text-[18px] lg:text-[20px]'
           >
             Book a Table

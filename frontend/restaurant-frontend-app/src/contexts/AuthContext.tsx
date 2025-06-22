@@ -14,6 +14,7 @@ interface AuthContextType extends AuthState {
   isCustomer: () => boolean;
   isWaiter: () => boolean;
   isVisitor: () => boolean;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,21 +31,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading: true,
   });
 
+  // Validate token format and structure
+  const isValidToken = (token: string): boolean => {
+    try {
+      // Basic token validation - in production, you might decode JWT and check expiration
+      return !!(token && token.length > 10 && token.includes('.'));
+    } catch {
+      return false;
+    }
+  };
+
   // Check for existing authentication on app startup
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
         const token = storageUtils.getToken();
         const user = storageUtils.getUser();
         
-        if (token && user) {
-          setAuthState({
-            isAuthenticated: true,
-            user,
-            token,
-            isLoading: false,
-          });
+        if (token && user && isValidToken(token)) {
+          // Validate token is still valid (in production, this would be a server call)
+          try {
+            // For now, we'll assume stored tokens are valid
+            // In production, you'd call an API endpoint to validate the token
+            setAuthState({
+              isAuthenticated: true,
+              user,
+              token,
+              isLoading: false,
+            });
+            console.log('Authentication restored from storage');
+          } catch (error) {
+            console.error('Token validation failed:', error);
+            // Clear invalid auth data
+            storageUtils.clearAuth();
+            setAuthState(prev => ({ ...prev, isLoading: false }));
+          }
         } else {
+          // No valid auth data found
+          if (token || user) {
+            console.log('Clearing incomplete auth data');
+            storageUtils.clearAuth();
+          }
           setAuthState(prev => ({ ...prev, isLoading: false }));
         }
       } catch (error) {
@@ -61,6 +88,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const { user, token } = await authService.login(credentials);
       
+      if (!isValidToken(token)) {
+        throw new Error('Invalid token received from server');
+      }
+      
       storageUtils.setToken(token);
       storageUtils.setUser(user);
       
@@ -70,6 +101,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         token,
         isLoading: false,
       });
+      
+      console.log('Login successful, user authenticated');
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -80,6 +113,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const { user, token } = await authService.register(credentials);
       
+      if (!isValidToken(token)) {
+        throw new Error('Invalid token received from server');
+      }
+      
       storageUtils.setToken(token);
       storageUtils.setUser(user);
       
@@ -89,6 +126,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         token,
         isLoading: false,
       });
+      
+      console.log('Registration successful, user authenticated');
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
@@ -96,14 +135,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    authService.logout();
-    storageUtils.clearAuth();
-    setAuthState({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      isLoading: false,
-    });
+    try {
+      authService.logout();
+      storageUtils.clearAuth();
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        isLoading: false,
+      });
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local state even if server logout fails
+      storageUtils.clearAuth();
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        isLoading: false,
+      });
+    }
+  };
+
+  const refreshAuth = async (): Promise<void> => {
+    try {
+      const token = storageUtils.getToken();
+      const user = storageUtils.getUser();
+      
+      if (!token || !user || !isValidToken(token)) {
+        logout();
+        return;
+      }
+      
+      // In production, you would validate the token with the server here
+      // For now, we'll just update the state
+      setAuthState({
+        isAuthenticated: true,
+        user,
+        token,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Auth refresh failed:', error);
+      logout();
+    }
   };
 
   // Role-based access control helpers
@@ -132,7 +208,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       hasAnyRole,
       isCustomer,
       isWaiter,
-      isVisitor
+      isVisitor,
+      refreshAuth
     }}>
       {children}
     </AuthContext.Provider>

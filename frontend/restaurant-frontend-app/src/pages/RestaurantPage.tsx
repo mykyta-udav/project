@@ -146,7 +146,7 @@ const RestaurantPage = () => {
 
               <div className='mt-6 flex-1'>
                 {restaurant.description.split('\n\n').length > 1
-                  ? // If description contains double newlines, split into paragraphs
+                  ? 
                     restaurant.description.split('\n\n').map((paragraph, index) => (
                       <p
                         key={index}
@@ -155,7 +155,7 @@ const RestaurantPage = () => {
                         {paragraph.trim()}
                       </p>
                     ))
-                  : // If no double newlines, split long description into logical paragraphs
+                  : 
                     (() => {
                       const sentences = restaurant.description.split('. ');
                       const midPoint = Math.ceil(sentences.length / 2);
@@ -201,11 +201,9 @@ const RestaurantPage = () => {
         </div>
       </section>
 
-      {/* Customer Reviews  */}
       <section className='px-6 pt-16 md:px-12'>
         <span className='text-2xl font-medium text-black'>Customer Reviews</span>
         
-        {/* Tabs with 40px gap from title */}
         <div className='mt-10'>
           <div className='flex justify-between items-center mb-8 border-b border-gray-200'>
             <div className='flex gap-8'>
