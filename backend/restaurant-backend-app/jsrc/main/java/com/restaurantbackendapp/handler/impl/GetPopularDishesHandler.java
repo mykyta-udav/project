@@ -10,9 +10,12 @@ import com.restaurantbackendapp.model.Dish;
 import com.restaurantbackendapp.repository.DishRepository;
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
 
 public class GetPopularDishesHandler implements EndpointHandler {
-    public static final String ERROR = "Error: ";
+    public static final String ERROR = "Error";
+    public static final String MESSAGE = "message";
+    public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     private final DishRepository repository;
     private final Gson gson;
 
@@ -43,7 +46,10 @@ public class GetPopularDishesHandler implements EndpointHandler {
             context.getLogger().log(ERROR + e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
-                    .withBody(e.getMessage());
+                    .withBody(gson.toJson(Map.of(
+                            ERROR, INTERNAL_SERVER_ERROR,
+                            MESSAGE, e.getMessage()
+                    )));
         }
     }
 }

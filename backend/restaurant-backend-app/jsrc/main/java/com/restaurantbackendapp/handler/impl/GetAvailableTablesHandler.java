@@ -1,5 +1,6 @@
 package com.restaurantbackendapp.handler.impl;
 
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -7,8 +8,10 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.google.gson.Gson;
 import com.restaurantbackendapp.dto.TableRequestQueryParams;
 import com.restaurantbackendapp.exception.InvalidQueryParameterException;
+import com.restaurantbackendapp.exception.LocationNotFoundException;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.model.Table;
+import com.restaurantbackendapp.repository.LocationRepository;
 import com.restaurantbackendapp.repository.ReservationRepository;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.annotations.NotNull;
@@ -19,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,16 +36,21 @@ public class GetAvailableTablesHandler implements EndpointHandler {
     public static final String TIME = "time";
     public static final String GUESTS = "guests";
     public static final String TABLE_NUMBER = "tableNumber";
-    public static final String ERROR = "Error: ";
+    public static final String ERROR = "Error ";
     public static final String RESERVATIONS_TABLE = "RESERVATIONS_TABLE";
     public static final String LOCATIONS_TABLE = "LOCATIONS_TABLE";
-    private final ReservationRepository repository;
+    public static final String MESSAGE = "Message";
+    public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
+    public static final String INVALID_QUERY_PARAMETERS = "Invalid query parameters";
+    private final ReservationRepository resRepo;
+    private final LocationRepository locRepo;
     private final Gson gson;
 
     @Inject
-    public GetAvailableTablesHandler(ReservationRepository repository, Gson gson) {
-        this.repository = repository;
+    public GetAvailableTablesHandler(ReservationRepository resRepo, Gson gson, LocationRepository locRepo) {
+        this.resRepo = resRepo;
         this.gson = gson;
+        this.locRepo = locRepo;
     }
 
     /**
@@ -51,15 +60,19 @@ public class GetAvailableTablesHandler implements EndpointHandler {
      * @param requestEvent The API Gateway request event containing query parameters
      * @param context The Lambda execution context
      * @return APIGatewayProxyResponseEvent with status code 200 and available tables on success,
-     *         400 for invalid parameters, or 500 for server errors
+     *         400 for invalid parameters, 404 if a location is not found, or 500 for server errors
      */
     @Override
     public APIGatewayProxyResponseEvent handle(@NotNull APIGatewayProxyRequestEvent requestEvent, @NotNull Context context) {
         try {
             TableRequestQueryParams params = extractTableRequestParams(requestEvent);
-            QueryResult queryResult = repository.fetchAvailableTables(params, context);
-            String locationAddress = repository.fetchLocationAddress(params, context);
+            QueryResult queryResult = resRepo.fetchAvailableTables(params, context);
 
+            if (queryResult.getCount() == 0) {
+               throw new InvalidQueryParameterException(INVALID_QUERY_PARAMETERS);
+            }
+
+            String locationAddress = locRepo.fetchLocationAddress(params, context);
             Map<String, Table> tableMap = buildTableAvailabilityMap(queryResult, locationAddress);
 
             return new APIGatewayProxyResponseEvent()
@@ -70,22 +83,29 @@ public class GetAvailableTablesHandler implements EndpointHandler {
             context.getLogger().log(ERROR + e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(400)
-                    .withBody(e.getMessage());
+                    .withBody(gson.toJson(Map.of(
+                            ERROR, INVALID_QUERY_PARAMETERS,
+                            MESSAGE, e.getMessage()
+                    )));
+        } catch (LocationNotFoundException e) {
+            context.getLogger().log(ERROR + e.getMessage());
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(404)
+                    .withBody(gson.toJson(Map.of(
+                            ERROR, "Restaurant Not Found",
+                            MESSAGE, "There are no available tables"
+                    )));
         } catch (Exception e) {
             context.getLogger().log(ERROR + e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
-                    .withBody(e.getMessage());
+                    .withBody(gson.toJson(Map.of(
+                            ERROR, INTERNAL_SERVER_ERROR,
+                            MESSAGE, e.getMessage()
+                    )));
         }
     }
 
-    /**
-     * Extracts and validates request parameters from the API Gateway event.
-     *
-     * @param requestEvent The API Gateway request event
-     * @return TableRequestQueryParams containing validated request parameters
-     * @throws InvalidQueryParameterException if required parameters are missing
-     */
     private TableRequestQueryParams extractTableRequestParams(APIGatewayProxyRequestEvent requestEvent) {
         Map<String, String> queryParams = requestEvent.getQueryStringParameters();
 
@@ -99,15 +119,13 @@ public class GetAvailableTablesHandler implements EndpointHandler {
         return new TableRequestQueryParams(locationId, date, time, guests);
     }
 
-    /**
-     * Builds a map of available tables with their details and time slots.
-     *
-     * @param queryResult The DynamoDB query result containing table information
-     * @param locationAddress The address of the restaurant location
-     * @return Map of table numbers to Table objects with availability information
-     */
     private Map<String, Table> buildTableAvailabilityMap(QueryResult queryResult, String locationAddress) {
         Map<String, Table> tableMap = new HashMap<>();
+
+        List<Map<String, AttributeValue>> items = queryResult.getItems();
+        if (items == null || items.isEmpty()) {
+            return tableMap;
+        }
 
         queryResult.getItems().forEach(item -> {
             String tableNumber = item.get(TABLE_NUMBER).getS();

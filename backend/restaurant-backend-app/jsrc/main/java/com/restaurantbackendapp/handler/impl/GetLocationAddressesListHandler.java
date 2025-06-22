@@ -10,11 +10,12 @@ import com.restaurantbackendapp.repository.LocationRepository;
 import software.amazon.awssdk.annotations.NotNull;
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
 
 public class GetLocationAddressesListHandler implements EndpointHandler {
-    public static final String ADDRESS = "address";
-    public static final String LOCATION_ID = "locationId";
-    public static final String ERROR = "Error: ";
+    public static final String ERROR = "Error";
+    public static final String MESSAGE = "message";
+    public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     private final LocationRepository repository;
     private final Gson gson;
 
@@ -27,7 +28,17 @@ public class GetLocationAddressesListHandler implements EndpointHandler {
     @Override
     public APIGatewayProxyResponseEvent handle(@NotNull APIGatewayProxyRequestEvent requestEvent, @NotNull Context context) {
         try {
-            List<Location> locationList = repository.findAllLocationAddresses().stream()
+            List<Location> locationList = repository.findAllLocationAddresses();
+            if (locationList.isEmpty()) {
+                context.getLogger().log("No locations found in the repository.");
+                return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(404)
+                        .withBody(gson.toJson(Map.of(
+                                ERROR, "No Locations Found",
+                                MESSAGE, "There are no locations available.")
+                        ));
+            }
+            List<Location> mappedList = locationList.stream()
                     .map(item -> Location.builder()
                             .locationId(item.getLocationId())
                             .address(item.getAddress())
@@ -36,12 +47,15 @@ public class GetLocationAddressesListHandler implements EndpointHandler {
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(gson.toJson(locationList));
+                    .withBody(gson.toJson(mappedList));
         } catch (Exception e) {
             context.getLogger().log(ERROR + e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
-                    .withBody(e.getMessage());
+                    .withBody(gson.toJson(Map.of(
+                            ERROR, INTERNAL_SERVER_ERROR,
+                            MESSAGE, e.getMessage()
+                    )));
         }
     }
 }

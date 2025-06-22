@@ -6,10 +6,11 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.QueryRequest;
-import com.amazonaws.services.dynamodbv2.model.QueryResult;
-import com.amazonaws.services.dynamodbv2.model.ScanRequest;
-import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
+import com.amazonaws.services.dynamodbv2.model.GetItemResult;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.restaurantbackendapp.dto.TableRequestQueryParams;
+import com.restaurantbackendapp.exception.LocationNotFoundException;
 import com.restaurantbackendapp.model.Location;
 import com.restaurantbackendapp.repository.LocationRepository;
 import javax.inject.Named;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 public class LocationRepositoryImpl implements LocationRepository {
+    public static final String LOCATION_ID = "locationId";
+    public static final String ADDRESS = "address";
     public static final String DB_CLIENT = "dynamoDbClient";
     public static final String LOCATIONS_TABLE = "LOCATIONS_TABLE";
     private final AmazonDynamoDB dynamoDbClient;
@@ -43,5 +46,27 @@ public class LocationRepositoryImpl implements LocationRepository {
                 .withHashKeyValues(Location.builder().locationId(locationId).build());
 
         return dynamoDBMapper.query(Location.class, queryExpression);
+    }
+
+    @Override
+    public String fetchLocationAddress(TableRequestQueryParams tableRequestQueryParams, Context context) {
+        context.getLogger().log("Fetching from locations table");
+        GetItemRequest getItemRequest = new GetItemRequest()
+                .withTableName(System.getenv(LOCATIONS_TABLE))
+                .withKey(Map.of(
+                        LOCATION_ID, new AttributeValue().withS(tableRequestQueryParams.locationId())
+                ));
+
+        GetItemResult getItemResult = dynamoDbClient.getItem(getItemRequest);
+        Map<String, AttributeValue> item = getItemResult.getItem();
+
+        if (item == null || !item.containsKey(ADDRESS)) {
+            throw new LocationNotFoundException(
+                    String.format("Location with ID '%s' not found in table '%s'.",
+                            tableRequestQueryParams.locationId(),
+                            LOCATIONS_TABLE)
+            );
+        }
+        return getItemResult.getItem().get(ADDRESS).getS();
     }
 }
