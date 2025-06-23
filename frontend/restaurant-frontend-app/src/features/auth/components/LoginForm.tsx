@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { InputField } from '@/components/ui/input';
-import { authAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
-import type { ApiError } from '@/services/api';
+// import { UserRole } from '@/types/auth';
 
 type LoginError = 'none' | 'empty' | 'invalid' | 'locked';
 
@@ -24,12 +23,13 @@ const validatePassword = (password: string): string => {
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  
+  const { login, isLoading } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<LoginError>('none');
   const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [errors, setErrors] = useState({
     email: '',
@@ -62,6 +62,19 @@ const LoginForm = () => {
     }
   }, [email, password, loginError]);
 
+  // // Role-based redirect function
+  // const getRedirectPath = (userRole: UserRole): string => {
+  //   switch (userRole) {
+  //     case UserRole.WAITER:
+  //       return '/waiter-dashboard';
+  //     case UserRole.VISITOR:
+  //       return '/visitor-area';
+  //     case UserRole.CUSTOMER:
+  //     default:
+  //       return '/';
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -80,50 +93,45 @@ const LoginForm = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      const response = await authAPI.signIn({ email, password });
-      
-      // Properly type the role to match our User interface
-      const userRole = response.role === 'ADMIN' ? 'ADMIN' : 'CLIENT';
-      
-      // Use the auth context to manage login state
-      login(response.accessToken, {
-        username: response.username,
-        role: userRole,
-      });
+      // Use the AuthContext login method - it will store user role automatically
+      await login({ email, password });
 
       // Reset error state
       setLoginError('none');
       setLoginAttempts(0);
 
-      // Redirect to main page using React Router
+      // Note: This will be available after the login promise resolves
+      console.log('Login successful - user role will be automatically stored in AuthContext');
+
+      // For now, redirect to main page - you can enhance this with role-based routing
       navigate('/', { replace: true });
-      
     } catch (error) {
-      const apiError = error as ApiError;
-      
       // Increment login attempts
       setLoginAttempts((prev) => prev + 1);
-      
-      // Handle different error cases
-      if (apiError.status === 401 || apiError.status === 403) {
+
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+
+      if (errorMessage.includes('Invalid email or password')) {
         if (loginAttempts + 1 >= 3) {
           setLoginError('locked');
         } else {
           setLoginError('invalid');
         }
-      } else if (apiError.status === 0) {
-        // Network error
+      } else if (errorMessage.includes('Network') || errorMessage.includes('connect')) {
         setErrors({
           email: 'Unable to connect to server. Please try again.',
           password: 'Unable to connect to server. Please try again.',
         });
       } else {
-        // Other errors
         setLoginError('invalid');
       }
-      
-      console.error('Login error:', apiError);
+
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -177,7 +185,7 @@ const LoginForm = () => {
             placeholder='Enter your Email'
             helperText={!getInputError('email') ? 'e.g. username@domain.com' : undefined}
             error={getInputError('email')}
-            className={getInputBorderClass('email')}
+            className={`w-[496px] ${getInputBorderClass('email')}`}
             required
           />
           {getInputError('email') && (
@@ -196,7 +204,7 @@ const LoginForm = () => {
             onBlur={() => handleBlur('password')}
             placeholder='Enter your Password'
             error={getInputError('password')}
-            className={getInputBorderClass('password')}
+            className={`w-[496px] ${getInputBorderClass('password')}`}
             required
           />
           {getInputError('password') && (
@@ -210,10 +218,10 @@ const LoginForm = () => {
           type='submit'
           variant='primary'
           size='extra-large'
-          className='w-full bg-green-200 text-white'
-          disabled={loginError === 'locked'}
+          className='w-[496px] bg-green-200 text-white'
+          disabled={loginError === 'locked' || isSubmitting || isLoading}
         >
-          Sign In
+          {isSubmitting || isLoading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>
 
@@ -223,6 +231,17 @@ const LoginForm = () => {
           Create an Account
         </Link>
       </div>
+
+      {/* helper to test with different roles */}
+      {import.meta.env.MODE === 'development' && (
+        <div className='mt-8 w-full'>
+          <p className='mb-2 text-xs text-gray-500'>Test Accounts (Development):</p>
+          <div className='space-y-1 text-xs text-gray-400'>
+            <p>Customer: customer@restaurant.com / password123</p>
+            <p>Waiter: waiter@restaurant.com / password123</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -17,6 +17,9 @@ const buttonVariants = cva(
 
         // Tertiary buttons
         tertiary: 'bg-transparent text-neutral-900',
+
+        // Ghost buttons (for calendar)
+        ghost: 'bg-transparent hover:bg-[#E9FFEA] hover:text-[#00AD0C] text-neutral-900',
       },
       size: {
         'extra-large': 'h-[56px] w-[145px] px-4 text-button-primary',
