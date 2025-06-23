@@ -313,7 +313,7 @@
     "autoscaling": [],
     "tags": {}
   },
-  "Emails": {
+  "${waiters_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "email",
     "hash_key_type": "S",

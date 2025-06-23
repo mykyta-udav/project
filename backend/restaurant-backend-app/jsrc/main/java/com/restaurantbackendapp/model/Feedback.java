@@ -22,7 +22,7 @@ public class Feedback {
     private String feedbackId;
 
     @DynamoDBAttribute
-    private Integer rate;
+    private Double rate;
 
     @DynamoDBAttribute
     private String comment;

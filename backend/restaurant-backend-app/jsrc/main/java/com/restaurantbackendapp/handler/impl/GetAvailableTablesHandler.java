@@ -42,6 +42,7 @@ public class GetAvailableTablesHandler implements EndpointHandler {
     public static final String MESSAGE = "Message";
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static final String INVALID_QUERY_PARAMETERS = "Invalid query parameters";
+    public static final String RESTAURANT_NOT_FOUND = "Restaurant Not Found";
     private final ReservationRepository resRepo;
     private final LocationRepository locRepo;
     private final Gson gson;
@@ -81,31 +82,31 @@ public class GetAvailableTablesHandler implements EndpointHandler {
 
         } catch (InvalidQueryParameterException e) {
             context.getLogger().log(ERROR + e.getMessage());
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(400)
-                    .withBody(gson.toJson(Map.of(
-                            ERROR, INVALID_QUERY_PARAMETERS,
-                            MESSAGE, e.getMessage()
-                    )));
+            return response(400, INVALID_QUERY_PARAMETERS, e);
         } catch (LocationNotFoundException e) {
-            context.getLogger().log(ERROR + e.getMessage());
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(404)
-                    .withBody(gson.toJson(Map.of(
-                            ERROR, "Restaurant Not Found",
-                            MESSAGE, "There are no available tables"
-                    )));
+            context.getLogger().log(ERROR + e.getMessage());//
+            return response(404, RESTAURANT_NOT_FOUND, e);
         } catch (Exception e) {
             context.getLogger().log(ERROR + e.getMessage());
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(500)
-                    .withBody(gson.toJson(Map.of(
-                            ERROR, INTERNAL_SERVER_ERROR,
-                            MESSAGE, e.getMessage()
-                    )));
+            return response(500, INTERNAL_SERVER_ERROR, e);
         }
     }
 
+    private APIGatewayProxyResponseEvent response(int statusCode, String message, Throwable e) {
+        return new APIGatewayProxyResponseEvent()
+                .withStatusCode(statusCode)
+                .withBody(gson.toJson(Map.of(
+                        ERROR, message,
+                        MESSAGE, e.getMessage())));
+    }
+
+    /**
+     * Extracts and validates request parameters from the API Gateway event.
+     *
+     * @param requestEvent The API Gateway request event
+     * @return TableRequestQueryParams containing validated request parameters
+     * @throws InvalidQueryParameterException if required parameters are missing
+     */
     private TableRequestQueryParams extractTableRequestParams(APIGatewayProxyRequestEvent requestEvent) {
         Map<String, String> queryParams = requestEvent.getQueryStringParameters();
 

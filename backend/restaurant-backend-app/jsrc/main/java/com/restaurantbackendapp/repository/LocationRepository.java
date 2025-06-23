@@ -5,6 +5,7 @@ import com.restaurantbackendapp.dto.TableRequestQueryParams;
 import com.restaurantbackendapp.exception.LocationNotFoundException;
 import com.restaurantbackendapp.model.Location;
 import java.util.List;
+import java.util.Optional;
 
 public interface LocationRepository {
 

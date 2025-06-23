@@ -95,8 +95,8 @@ public class HandlersModule {
     @Provides
     @IntoMap
     @StringKey("GET:/locations/{id}/speciality-dishes")
-    public EndpointHandler provideGetLocationSpecialityDishesHandler(LocationRepository repo, Gson gson) {
-        return new GetLocationSpecialityDishesHandler(repo, gson);
+    public EndpointHandler provideGetLocationSpecialityDishesHandler(LocationRepository locationRepository, Gson gson, DishRepository dishRepository) {
+        return new GetLocationSpecialityDishesHandler(locationRepository, gson,  dishRepository);
     }
 
     @Singleton
