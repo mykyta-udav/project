@@ -6,6 +6,8 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.dto.SignUpRequestDto;
+import com.restaurantbackendapp.model.User;
+import com.restaurantbackendapp.repository.UserRepository;
 import com.restaurantbackendapp.repository.WaiterRepository;
 import lombok.experimental.FieldDefaults;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -26,6 +28,8 @@ public class SignUpHandler implements EndpointHandler {
     Gson gson;
     WaiterRepository waiterRepository;
 
+    UserRepository userRepository;
+
     static String GROUP_CUSTOMER = "Customer";
     private static final String GROUP_WAITER = "Waiter";
     static int TEMP_PASSWORD_LENGTH = 12;
@@ -35,11 +39,13 @@ public class SignUpHandler implements EndpointHandler {
             @Named("cognitoClient") CognitoIdentityProviderClient cognitoClient,
             @Named("userPoolId") String userPoolId,
             WaiterRepository waiterRepository,
+            UserRepository userRepository,
             Gson gson
     ) {
         this.cognitoClient = cognitoClient;
         this.userPoolId = userPoolId;
         this.waiterRepository = waiterRepository;
+        this.userRepository = userRepository;
         this.gson = gson;
     }
 
@@ -71,15 +77,15 @@ public class SignUpHandler implements EndpointHandler {
 
             AttributeType emailAttr = AttributeType.builder().name("email").value(email).build();
             AttributeType emailVerifiedAttr = AttributeType.builder().name("email_verified").value("true").build();
-            AttributeType firstNameAttr = AttributeType.builder().name("custom:firstName").value(signUpRequest.getFirstName().trim()).build();
-            AttributeType lastNameAttr = AttributeType.builder().name("custom:lastName").value(signUpRequest.getLastName().trim()).build();
+            //AttributeType firstNameAttr = AttributeType.builder().name("custom:firstName").value(signUpRequest.getFirstName().trim()).build();
+            //AttributeType lastNameAttr = AttributeType.builder().name("custom:lastName").value(signUpRequest.getLastName().trim()).build();
 
             String tempPassword = generateSecureTempPassword();
 
             AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
                     .userPoolId(userPoolId)
                     .username(email)
-                    .userAttributes(emailAttr, emailVerifiedAttr, firstNameAttr, lastNameAttr)
+                    .userAttributes(emailAttr, emailVerifiedAttr)
                     .temporaryPassword(tempPassword)
                     .messageAction(MessageActionType.SUPPRESS)
                     .build();
@@ -102,6 +108,24 @@ public class SignUpHandler implements EndpointHandler {
                     .build();
 
             cognitoClient.adminAddUserToGroup(addToGroupRequest);
+
+            AdminGetUserRequest getUserRequest = AdminGetUserRequest.builder()
+                    .userPoolId(userPoolId)
+                    .username(email)
+                    .build();
+
+            AdminGetUserResponse userResponse = cognitoClient.adminGetUser(getUserRequest);
+            String sub = userResponse.userAttributes().stream()
+                    .filter(attr -> attr.name().equals("sub"))
+                    .findFirst()
+                    .map(AttributeType::value)
+                    .orElse(null);
+            if (sub == null) {
+                return response(404, "Failed to extract user ID from Cognito");
+            }
+
+            User user = new User(sub, email, signUpRequest.getFirstName().trim(), signUpRequest.getLastName().trim(), "");
+            userRepository.save(user);
 
             return response(201, "User registered successfully");
 
