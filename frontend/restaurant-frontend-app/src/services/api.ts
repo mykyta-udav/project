@@ -6,6 +6,7 @@ import type { Location, LocationSelectOption } from '@/types/location';
 import type { FeedbackResponse, FeedbackType } from '@/types/feedback';
 import type { BookingTable, BookingSearchParams, ReservationRequest, ReservationResponse } from '@/types/booking';
 import { localReservationStorage } from '@/utils/localReservationStorage';
+import { extractUserFromToken } from '@/utils/jwtUtils';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -148,10 +149,15 @@ export const realAuthService = {
     try {
       const response = await authAPI.signIn(credentials);
 
+      // Extract user data from JWT token
+      const userInfo = extractUserFromToken(response.accessToken, credentials.email);
+      
       const user: User = {
-        username: response.username,
+        username: userInfo?.username || response.username,
         email: credentials.email,
-        role: mapBackendRole(response.role),
+        firstName: userInfo?.firstName,
+        lastName: userInfo?.lastName,
+        role: mapBackendRole(userInfo?.role || response.role),
       };
 
       return {
@@ -185,10 +191,15 @@ export const realAuthService = {
         password: credentials.password,
       });
 
+      // Extract user data from JWT token
+      const userInfo = extractUserFromToken(loginResponse.accessToken, credentials.email);
+
       const user: User = {
-        username: credentials.username,
+        username: userInfo?.username || credentials.username,
         email: credentials.email,
-        role: mapBackendRole(loginResponse.role),
+        firstName: userInfo?.firstName || firstName,
+        lastName: userInfo?.lastName || lastName,
+        role: mapBackendRole(userInfo?.role || loginResponse.role),
       };
 
       return {

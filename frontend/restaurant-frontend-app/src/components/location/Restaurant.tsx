@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Location } from '@/types/location';
 import locationIcon from '../../assets/icons/location.png';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface RestaurantProps {
   location: Location;
@@ -12,9 +13,10 @@ const Restaurant = ({ location }: RestaurantProps) => {
       <div className='h-[256px] w-[432px] overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer'>
         {/* Image */}
         <div className='h-[140px] w-full overflow-hidden rounded-t-3xl'>
-          <img
+          <ImageWithFallback
             src={location.imageUrl}
             alt={location.address}
+            imageType="location"
             className='h-full w-full object-cover hover:scale-105 transition-transform duration-300'
           />
         </div>

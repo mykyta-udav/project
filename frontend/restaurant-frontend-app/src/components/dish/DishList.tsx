@@ -18,7 +18,6 @@ const DishList = () => {
         setError('Failed to load popular dishes');
         console.error('Error fetching popular dishes:', err);
 
-        // Mock data for development 
         const mockDishes: DishType[] = [
           {
             name: 'Fresh Strawberry Mint Salad',

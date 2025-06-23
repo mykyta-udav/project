@@ -70,13 +70,13 @@ const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, onUpdate
 
   return (
     <>
-      <div className="w-[432px] h-[256px] bg-white border border-[#DADADA] rounded-lg p-6">
+      <div className="w-full max-w-[432px] mx-auto bg-white border border-[#DADADA] rounded-lg p-4 sm:p-5 lg:p-6 h-auto min-h-[240px] sm:min-h-[256px]">
         <div className="flex flex-col h-full">
           {/* Header with location and status */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <img src={locationIcon} alt="Location" className="w-4 h-4" />
-              <span className="text-sm font-bold text-[#232323]">
+              <span className="text-sm font-bold text-[#232323] sm:text-base">
                 {reservation.locationAddress}
               </span>
             </div>
@@ -84,24 +84,24 @@ const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, onUpdate
           </div>
 
           {/* Reservation details */}
-          <div className="flex flex-col gap-3 mb-4">
+          <div className="flex flex-col gap-2 mb-3 sm:gap-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <img src={calendarGreenIcon} alt="Date" className="w-4 h-4" />
-              <span className="text-sm font-bold text-[#232323]">
+              <span className="text-sm font-bold text-[#232323] sm:text-base">
                 {formatDisplayDate(reservation.date)}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <img src={clockGreenIcon} alt="Time" className="w-4 h-4" />
-              <span className="text-sm font-bold text-[#232323]">
+              <span className="text-sm font-bold text-[#232323] sm:text-base">
                 {reservation.timeSlot}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <img src={peopleGreenIcon} alt="Guests" className="w-4 h-4" />
-              <span className="text-sm font-bold text-[#232323]">
+              <span className="text-sm font-bold text-[#232323] sm:text-base">
                 {reservation.guestsNumber} Guests
               </span>
             </div>
@@ -109,19 +109,19 @@ const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, onUpdate
 
           {/* Time restriction info */}
           {reservation.status.toLowerCase() === 'reserved' && (
-            <div className="mb-4">
-              <p className="text-xs text-gray-500">
+            <div className="mb-3 sm:mb-4">
+              <p className="text-xs text-gray-500 sm:text-sm">
                 {formatDeadlineMessage(restrictionInfo)}
               </p>
             </div>
           )}
 
           {/* Action buttons */}
-          <div className="flex gap-4 mt-auto">
+          <div className="flex gap-3 mt-auto sm:gap-4">
             <button
               onClick={handleCancelClick}
               disabled={!restrictionInfo.canCancel}
-              className="text-sm font-bold text-[#232323] border-b border-[#232323] hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-400 disabled:text-gray-400"
+              className="text-sm font-bold text-[#232323] border-b border-[#232323] hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-400 disabled:text-gray-400 sm:text-base"
               title={!restrictionInfo.canCancel ? restrictionInfo.reasonForRestriction : 'Cancel reservation'}
             >
               Cancel
@@ -130,7 +130,7 @@ const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, onUpdate
             <button
               onClick={handleEditClick}
               disabled={!restrictionInfo.canModify}
-              className="text-sm font-bold text-[#00AD0C] hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400"
+              className="text-sm font-bold text-[#00AD0C] hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 sm:text-base"
               title={!restrictionInfo.canModify ? restrictionInfo.reasonForRestriction : 'Edit reservation'}
             >
               Edit

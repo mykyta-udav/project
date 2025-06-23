@@ -57,9 +57,6 @@ const ReservationConfirmationModal: React.FC<ReservationConfirmationModalProps> 
     });
   };
 
-  // Use reservation data if available, fallback to props
-  const reservationId = reservation?.id;
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
@@ -82,12 +79,6 @@ const ReservationConfirmationModal: React.FC<ReservationConfirmationModalProps> 
                 <span className="font-medium">{timeTo}</span> at{' '}
                 <span className="font-medium">Table {table.tableNumber}</span> has been successfully made.
               </p>
-              
-              {reservationId && (
-                <p className="text-xs text-gray-500">
-                  Reservation ID: <span className="font-medium">{reservationId}</span>
-                </p>
-              )}
               
               <p>
                 We look forward to welcoming you at{' '}

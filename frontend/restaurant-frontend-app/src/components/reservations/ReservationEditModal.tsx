@@ -167,7 +167,7 @@ const ReservationEditModal: React.FC<ReservationEditModalProps> = ({
             </p>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <p className="text-xs text-yellow-800">
-                ⏰ {formatDeadlineMessage(restrictionInfo)}
+                {formatDeadlineMessage(restrictionInfo)}
               </p>
             </div>
           </div>

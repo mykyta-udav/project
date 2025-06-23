@@ -78,9 +78,9 @@ const SpecialtyDishList = ({ locationId }: SpecialtyDishListProps) => {
 
   return (
     <div className='w-full'>
-      <div className='flex gap-12 overflow-x-auto pb-4 pl-12 pt-10'>
+      <div className='grid grid-cols-1 gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12 lg:pl-12 lg:pt-10'>
         {dishes.map((dish, index) => (
-          <div key={index}>
+          <div key={index} className='flex justify-center'>
             <Dish dish={dish} />
           </div>
         ))}

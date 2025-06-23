@@ -15,6 +15,11 @@ import {
   DropdownMenuContent as CalendarDropdownContent,
   DropdownMenuTrigger as CalendarDropdownTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu as TimeDropdown,
+  DropdownMenuContent as TimeDropdownContent,
+  DropdownMenuTrigger as TimeDropdownTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { locationsAPI, bookingAPI } from '@/services/api';
@@ -28,6 +33,10 @@ const mockLocations: LocationSelectOption[] = [
   { id: 'mock-1', address: '48 Rustaveli Avenue' },
   { id: 'mock-2', address: '14 Baratashvili Street' },
   { id: 'mock-3', address: '9 Abashidze Street' },
+  { id: 'mock-4', address: '25 Chavchavadze Avenue' },
+  { id: 'mock-5', address: '7 Pekini Street' },
+  { id: 'springfield-1', address: '123 Main St, Springfield' },
+  { id: 'springfield-2', address: '100 Main St, Springfield' },
 ];
 
 // Mock tables data
@@ -73,6 +82,41 @@ const mockTables: BookingTable[] = [
     capacity: '2',
     availableSlots: ['11:00 a.m. - 12:30 p.m', '1:00 p.m. - 2:30 p.m', '3:00 p.m. - 4:30 p.m'],
   },
+  {
+    locationId: 'mock-5',
+    locationAddress: '7 Pekini Street',
+    tableNumber: '1',
+    capacity: '2',
+    availableSlots: ['9:00 a.m. - 10:30 a.m', '11:00 a.m. - 12:30 p.m', '1:00 p.m. - 2:30 p.m', '4:00 p.m. - 5:30 p.m'],
+  },
+  // Springfield locations (matching production)
+  {
+    locationId: 'springfield-1',
+    locationAddress: '123 Main St, Springfield',
+    tableNumber: '1',
+    capacity: '2',
+    availableSlots: ['11:00 a.m. - 12:30 p.m', '1:00 p.m. - 2:30 p.m', '3:00 p.m. - 4:30 p.m'],
+  },
+  {
+    locationId: 'springfield-1',
+    locationAddress: '123 Main St, Springfield',
+    tableNumber: '2',
+    capacity: '4',
+    availableSlots: ['11:00 a.m. - 12:30 p.m', '1:00 p.m. - 2:30 p.m', '3:00 p.m. - 4:30 p.m'],
+  },
+  {
+    locationId: 'springfield-2',
+    locationAddress: '100 Main St, Springfield',
+    tableNumber: '1',
+    capacity: '4',
+    availableSlots: [
+      '10:30 a.m. - 12:00 p.m',
+      '12:15 p.m. - 1:45 p.m',
+      '2:00 p.m. - 3:30 p.m',
+      '3:45 p.m. - 5:15 p.m',
+      '5:30 p.m. - 7:00 p.m',
+    ],
+  },
 ];
 
 const BookPage = () => {
@@ -84,20 +128,54 @@ const BookPage = () => {
   const [locations, setLocations] = useState<LocationSelectOption[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
   const [tables, setTables] = useState<BookingTable[]>([]);
   const [tablesLoading, setTablesLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  const defaultTimes = [
-    '7:00 PM',
-    '8:00 PM',
-    '6:00 PM',
-    '9:00 PM',
-    '6:30 PM',
-    '7:30 PM',
-    '8:30 PM',
-    '9:30 PM',
-  ];
+  // Generate time slots in 15-minute intervals
+  const generateTimeSlots = () => {
+    const times: string[] = [];
+    const startHour = 10; // 10:00 AM
+    const endHour = 22; // 10:00 PM
+    
+    for (let hour = startHour; hour <= endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        // Convert to 12-hour format
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+        const displayMinute = minute.toString().padStart(2, '0');
+        
+        times.push(`${displayHour}:${displayMinute} ${period}`);
+      }
+    }
+    
+    return times;
+  };
+
+  const defaultTimes = generateTimeSlots();
+
+  // Convert 12-hour time format to 24-hour format for API
+  const convertTo24HourFormat = (time12h: string): string => {
+    try {
+      const time = time12h.trim();
+      const [timePart, period] = time.split(' ');
+      const [hours, minutes] = timePart.split(':');
+      
+      let hour24 = parseInt(hours, 10);
+      
+      if (period.toUpperCase() === 'PM' && hour24 !== 12) {
+        hour24 += 12;
+      } else if (period.toUpperCase() === 'AM' && hour24 === 12) {
+        hour24 = 0;
+      }
+      
+      return `${hour24.toString().padStart(2, '0')}:${minutes}`;
+    } catch (error) {
+      console.error('Error converting time format:', error);
+      return time12h;
+    }
+  };
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -129,6 +207,7 @@ const BookPage = () => {
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
+    setTimePickerOpen(false);
   };
 
   // Format date for display
@@ -159,13 +238,23 @@ const BookPage = () => {
       const searchParams = {
         locationId: selectedLocationId,
         date: format(selectedDate, 'yyyy-MM-dd'),
-        time: selectedTime,
+        time: convertTo24HourFormat(selectedTime),
         guests: guestCount.toString(),
       };
 
       try {
         const tableData = await bookingAPI.getAvailableTables(searchParams);
-        setTables(tableData);
+        
+        // If API returns empty results, fall back to mock data for demo purposes
+        if (tableData.length === 0) {
+          console.log('API returned empty results, using mock data for demo');
+          const filteredMockTables = mockTables.filter(
+            (table) => table.locationAddress === selectedLocation
+          );
+          setTables(filteredMockTables);
+        } else {
+          setTables(tableData);
+        }
       } catch (error) {
         console.error('Error fetching tables:', error);
         console.log('Using mock data fallback');
@@ -203,13 +292,13 @@ const BookPage = () => {
 
             {/* Booking Form  */}
             <div className="mt-[40px]">
-              <div className="flex flex-wrap items-end justify-start gap-6">
+              <div className="flex flex-wrap items-end justify-start gap-4 lg:gap-6">
                 {/* Location Dropdown */}
-                <div className="w-[500px]">
+                <div className="w-full sm:w-[320px] md:w-[400px] lg:w-[500px]">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
-                        className="flex h-[56px] w-full items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-6 py-4 text-left hover:shadow-[0px_0px_8px_0px_rgba(0,173,12,0.20)] focus:border-[#00AD0C] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-[56px] w-full items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-4 py-4 text-left hover:shadow-[0px_0px_8px_0px_rgba(0,173,12,0.20)] focus:border-[#00AD0C] disabled:cursor-not-allowed disabled:opacity-50 lg:px-6"
                         disabled={locationsLoading}
                       >
                         <img src={locationIcon} alt="Location" className="h-5 w-5" />
@@ -222,7 +311,7 @@ const BookPage = () => {
                         </span>
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[500px]">
+                    <DropdownMenuContent className="w-full sm:w-[320px] md:w-[400px] lg:w-[500px]">
                       {locations.length === 0 && !locationsLoading ? (
                         <DropdownMenuItem disabled className="text-gray-500">
                           No locations available
@@ -243,10 +332,10 @@ const BookPage = () => {
                 </div>
 
                 {/* Date Calendar Dropdown */}
-                <div className="w-[250px]">
+                <div className="w-full sm:w-[200px] md:w-[220px] lg:w-[250px]">
                   <CalendarDropdown open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <CalendarDropdownTrigger asChild>
-                      <button className="flex h-[56px] w-full items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-6 py-4 text-left hover:shadow-[0px_0px_8px_0px_rgba(0,173,12,0.20)] focus:border-[#00AD0C]">
+                      <button className="flex h-[56px] w-full items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-4 py-4 text-left hover:shadow-[0px_0px_8px_0px_rgba(0,173,12,0.20)] focus:border-[#00AD0C] lg:px-6">
                         <img src={calendarIcon} alt="Date" className="h-5 w-5" />
                         <span className={!selectedDate ? 'text-gray-500' : 'text-black'}>
                           {formatDateForDisplay(selectedDate)}
@@ -274,33 +363,42 @@ const BookPage = () => {
                   </CalendarDropdown>
                 </div>
 
-                {/* Time Dropdown */}
-                <div className="w-[220px]">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex h-[56px] w-full items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-6 py-4 text-left hover:shadow-[0px_0px_8px_0px_rgba(0,173,12,0.20)] focus:border-[#00AD0C]">
+                {/* Time Picker */}
+                <div className="w-full sm:w-[180px] md:w-[200px] lg:w-[220px]">
+                  <TimeDropdown open={timePickerOpen} onOpenChange={setTimePickerOpen}>
+                    <TimeDropdownTrigger asChild>
+                      <button className="flex h-[56px] w-full items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-4 py-4 text-left hover:shadow-[0px_0px_8px_0px_rgba(0,173,12,0.20)] focus:border-[#00AD0C] lg:px-6">
                         <img src={clockIcon} alt="Time" className="h-5 w-5" />
                         <span className={selectedTime === 'Time' ? 'text-gray-500' : 'text-black'}>
                           {selectedTime}
                         </span>
                       </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[220px]">
-                      {defaultTimes.map((time) => (
-                        <DropdownMenuItem
-                          key={time}
-                          onClick={() => handleTimeSelect(time)}
-                          className="cursor-pointer"
-                        >
-                          {time}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    </TimeDropdownTrigger>
+                    <TimeDropdownContent className="w-[320px] p-4 sm:w-[400px]" align="start">
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-gray-900">Select Time</h3>
+                        <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto sm:grid-cols-4">
+                          {defaultTimes.map((time) => (
+                            <button
+                              key={time}
+                              onClick={() => handleTimeSelect(time)}
+                              className={`w-20 h-10 text-sm rounded-lg border transition-all duration-200 flex items-center justify-center ${
+                                selectedTime === time
+                                  ? 'bg-[#00AD0C] text-white border-[#00AD0C]'
+                                  : 'bg-white text-gray-700 border-gray-200 hover:bg-[#E9FFEA] hover:border-[#00AD0C] hover:text-[#00AD0C]'
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </TimeDropdownContent>
+                  </TimeDropdown>
                 </div>
 
                 {/* Guests Selector */}
-                <div className="flex h-[56px] w-[300px] items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-6 py-4">
+                <div className="flex h-[56px] w-full items-center gap-2 rounded-lg border border-[#DADADA] bg-white px-4 py-4 sm:w-[250px] md:w-[280px] lg:w-[300px] lg:px-6">
                   <img src={peopleIcon} alt="Guests" className="h-5 w-5" />
                   <span className="flex-1 text-black">Guests</span>
                   <div className="flex items-center gap-2">
@@ -329,7 +427,7 @@ const BookPage = () => {
                 {/* Find a Table Button */}
                 <Button
                   size="extra-large"
-                  className="w-[300px] font-bold text-white"
+                  className="w-full font-bold text-white sm:w-[250px] md:w-[280px] lg:w-[300px]"
                   onClick={handleFindTable}
                   disabled={tablesLoading}
                 >
@@ -343,8 +441,8 @@ const BookPage = () => {
 
       {/* Results Section */}
       {showResults && (
-        <section className="px-6 pb-10 md:px-12">
-          <div className="mb-6">
+        <section className="px-4 pb-10 sm:px-6 md:px-8 lg:px-12">
+          <div className="mb-6 mt-32 sm:mt-12 lg:mt-0">
             <h2 className="text-[16px] text-[#232323]">
               {tablesLoading ? 'Searching for tables...' : `${tables.length} tables available`}
             </h2>
@@ -359,7 +457,7 @@ const BookPage = () => {
               <div className="text-gray-500">No tables available for the selected criteria.</div>
             </div>
           ) : (
-            <div className="flex flex-wrap justify-center gap-8">
+            <div className="flex flex-col items-center gap-6 sm:gap-8 lg:flex-row lg:flex-wrap lg:justify-center">
               {tables.map((table, index) => (
                 <TableCard
                   key={`${table.locationId}-${table.tableNumber}-${index}`}

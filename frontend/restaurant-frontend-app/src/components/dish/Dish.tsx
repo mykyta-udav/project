@@ -1,4 +1,5 @@
 import type { Dish as DishType } from '@/types/dish';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface DishProps {
   dish: DishType;
@@ -19,7 +20,14 @@ const Dish = ({ dish }: DishProps) => {
           boxShadow: '0px 0px 10px 4px rgba(194, 194, 194, 0.50)',
         }}
       >
-        <img src={dish.imageUrl} alt={dish.name} className='h-full w-full object-cover' />
+        {/* UNCOMMENT LATER */}
+            {/* <img src={dish.imageUrl} alt={dish.name} className='h-full w-full object-cover' /> */}
+        <ImageWithFallback 
+          src={dish.imageUrl} 
+          alt={dish.name} 
+          imageType="dish"
+          className='h-full w-full object-cover' 
+        />
       </div>
 
       {/* Content  */}

@@ -14,11 +14,13 @@ const ProfileForm = () => {
   const { user, isAuthenticated } = useAuth();
 
   const getFirstName = () => {
+    if (user?.firstName) return user.firstName;
     if (!user?.username) return '';
     return user.username.split(' ')[0] || '';
   };
 
   const getLastName = () => {
+    if (user?.lastName) return user.lastName;
     if (!user?.username) return '';
     const nameParts = user.username.split(' ');
     return nameParts.slice(1).join(' ') || '';

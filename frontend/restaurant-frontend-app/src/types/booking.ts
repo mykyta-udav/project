@@ -9,7 +9,7 @@ export interface BookingTable {
 export interface BookingSearchParams {
   locationId: string;
   date: string;
-  time: string;
+  time?: string;
   guests: string;
 }
 

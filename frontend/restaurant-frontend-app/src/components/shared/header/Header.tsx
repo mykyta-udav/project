@@ -61,12 +61,12 @@ const Header = () => {
           >
             Main page
           </Link>
-          <a
-            href='/book'
+          <Link
+            to='/booking'
             className='text-[16px] font-medium leading-[32px] text-[#232323] hover:text-[#00AD0C] md:text-[18px] lg:text-[20px]'
           >
             Book a Table
-          </a>
+          </Link>
         </div>
       );
     }
@@ -84,12 +84,12 @@ const Header = () => {
           >
             Main page
           </Link>
-          <a
-            href='/book'
+          <Link
+            to='/booking'
             className='mr-4 text-[16px] font-medium leading-[32px] text-[#232323] hover:text-[#00AD0C] md:text-[18px] lg:text-[20px]'
           >
             Book a Table
-          </a>
+          </Link>
           <Link
             to='/reservations'
             className={`text-[16px] font-medium leading-[32px] md:text-[18px] lg:text-[20px] ${

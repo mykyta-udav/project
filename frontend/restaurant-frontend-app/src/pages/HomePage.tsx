@@ -16,13 +16,13 @@ const HomePage = () => {
           <div className='absolute inset-0 bg-black bg-opacity-30'></div>
           <div className='relative z-10 w-[339px]'>
             <div className='flex flex-col gap-10'>
-              <h1 className='text-5xl font-medium leading-[48px] text-[#00AD0C]'>Green & Tasty</h1>
+              <h1 className='hidden text-5xl font-medium leading-[48px] text-[#00AD0C] lg:block'>Green & Tasty</h1>
               <div className='flex flex-col gap-4'>
-                <p className='text-sm font-light leading-6 text-white'>
+                <p className='text-sm leading-6 text-white'>
                   A network of restaurants in Tbilisi, Georgia, offering fresh, locally sourced
                   dishes with a focus on health and sustainability.
                 </p>
-                <p className='text-sm font-light leading-6 text-white'>
+                <p className='text-sm leading-6 text-white'>
                   Our diverse menu includes vegetarian and vegan options, crafted to highlight the
                   rich flavors of Georgian cuisine with a modern twist.
                 </p>

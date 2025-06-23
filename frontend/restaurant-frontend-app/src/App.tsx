@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import ReservationAuthGuard from './components/auth/ReservationAuthGuard';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import HomePage from './pages/HomePage';
@@ -21,34 +20,25 @@ function App() {
             {/* Public routes */}
             <Route index element={<HomePage />} />
             <Route path='/restaurant/:id' element={<RestaurantPage />} />
-            
+            <Route path='/booking' element={<BookPage />} />
+
             {/* Protected routes that require authentication */}
-            <Route 
-              path='/profile' 
+            <Route
+              path='/profile'
               element={
                 <ProtectedRoute>
                   <ProfilePage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path='/reservations' 
+
+            <Route
+              path='/reservations'
               element={
                 <ProtectedRoute>
                   <ReservationsPage />
                 </ProtectedRoute>
-              } 
-            />
-            
-            {/* Reservation route with special authentication guard */}
-            <Route 
-              path='/book' 
-              element={
-                <ReservationAuthGuard>
-                  <BookPage />
-                </ReservationAuthGuard>
-              } 
+              }
             />
           </Route>
 

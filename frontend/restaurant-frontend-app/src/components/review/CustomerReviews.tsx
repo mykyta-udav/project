@@ -151,19 +151,34 @@ const CustomerReviews = ({ locationId, activeTab, sortOrder }: CustomerReviewsPr
 
       try {
         setLoading(true);
-        
-        // Try to fetch both types of reviews
+
         const [serviceResponse, cuisineResponse] = await Promise.all([
-          feedbackAPI.getFeedbacks(locationId, FeedbackType.SERVICE_QUALITY).catch(() => null),
-          feedbackAPI.getFeedbacks(locationId, FeedbackType.CUISINE_EXPERIENCE).catch(() => null)
+          feedbackAPI.getFeedbacks(locationId, FeedbackType.SERVICE_QUALITY)
+            .catch(error => {
+              console.error('Service feedbacks error:', error);
+              return null;
+            }),
+          feedbackAPI.getFeedbacks(locationId, FeedbackType.CUISINE_EXPERIENCE)
+            .catch(error => {
+              console.error('Cuisine feedbacks error:', error);
+              return null;
+            })
         ]);
 
-        // Set locationId for mock data
-        const serviceWithLocationId = mockServiceReviews.map(review => ({ ...review, locationId }));
-        const cuisineWithLocationId = mockCuisineReviews.map(review => ({ ...review, locationId }));
+        if (serviceResponse !== null) {
+          setServiceReviews(serviceResponse.content || []);
+        } else {
+          const serviceWithLocationId = mockServiceReviews.map(review => ({ ...review, locationId }));
+          setServiceReviews(serviceWithLocationId);
+        }
 
-        setServiceReviews(serviceResponse?.content || serviceWithLocationId);
-        setCuisineReviews(cuisineResponse?.content || cuisineWithLocationId);
+        if (cuisineResponse !== null) {
+          setCuisineReviews(cuisineResponse.content || []);
+        } else {
+          const cuisineWithLocationId = mockCuisineReviews.map(review => ({ ...review, locationId }));
+          setCuisineReviews(cuisineWithLocationId);
+        }
+
       } catch (err) {
         setError('Failed to load reviews');
         console.error('Error fetching reviews:', err);
@@ -236,24 +251,26 @@ const CustomerReviews = ({ locationId, activeTab, sortOrder }: CustomerReviewsPr
         <div className='flex h-40 items-center justify-center'>
           <div className='text-red-500'>Failed to load reviews</div>
         </div>
+      ) : sortedReviews.length === 0 ? (
+        <div className='flex h-40 items-center justify-center'>
+          <div className='text-gray-500'>No reviews available for this location</div>
+        </div>
       ) : (
         <>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-12 pt-8'>
+          <div className='grid grid-cols-1 justify-items-center gap-4 pt-6 sm:grid-cols-2 sm:justify-items-stretch sm:gap-6 lg:grid-cols-4 lg:px-12 lg:pt-8'>
             {paginatedReviews.map((review) => (
               <ReviewCard key={review.id} feedback={review} />
             ))}
           </div>
           
-          {/* Pagination with 30px margin after */}
-          {totalPages > 1 && (
-            <div className="mb-8">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
-          )}
+          {/* Pagination */}
+          <div className="mb-6 mt-6 w-full lg:mb-8 lg:mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
         </>
       )}
     </div>

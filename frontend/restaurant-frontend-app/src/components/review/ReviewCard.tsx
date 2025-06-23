@@ -1,5 +1,6 @@
 import type { Feedback } from '@/types/feedback';
 import starIcon from '../../assets/icons/star-01.png';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface ReviewCardProps {
   feedback: Feedback;
@@ -39,20 +40,21 @@ const ReviewCard = ({ feedback }: ReviewCardProps) => {
         <div className="flex items-start gap-3">
           {/* Avatar */}
           <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-            <img
+            <ImageWithFallback
               src={feedback.userAvatarUrl}
               alt={feedback.userName}
+              imageType="avatar"
               className="w-full h-full object-cover"
             />
           </div>
           
           {/* User info and rating */}
           <div className="flex-1">
-            <div className="flex items-center mb-1" style={{ gap: '7px' }}>
+            <div className="flex items-center mb-1 gap-1">
               <span className="text-sm font-medium text-[#232323]">
                 {feedback.userName}
               </span>
-              <div className="flex gap-1">
+              <div className="flex gap-[2px]">
                 {renderStars(rating)}
               </div>
             </div>
@@ -65,7 +67,7 @@ const ReviewCard = ({ feedback }: ReviewCardProps) => {
         </div>
       </div>
 
-      {/* Review text section */}
+      {/* Review text */}
       <div className="px-6 pb-6 flex-1 flex items-center">
         <p className="text-sm text-[#232323] leading-relaxed text-left">
           {feedback.comment}

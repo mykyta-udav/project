@@ -61,12 +61,12 @@ const Menu = () => {
           >
             Main page
           </Link>
-          <a
-            href='#'
+          <Link
+            to='/booking'
             className='font-poppins text-[18px] font-medium leading-[22px] text-[#232323] hover:text-[#00AD0C]'
           >
             Book a Table
-          </a>
+          </Link>
           <Link to='/login'>
             <Button
               variant='secondary'
@@ -88,12 +88,12 @@ const Menu = () => {
           >
             Main page
           </Link>
-          <a
-            href='#'
+          <Link
+            to='/booking'
             className='font-poppins text-[18px] font-medium leading-[22px] text-[#232323] hover:text-[#00AD0C]'
           >
             Book a Table
-          </a>
+          </Link>
           <Link
             to='/reservations'
             className='font-poppins text-[18px] font-medium leading-[22px] text-[#232323] hover:text-[#00AD0C]'

@@ -18,7 +18,6 @@ const LocationList = () => {
         setError('Failed to load locations');
         console.error('Error fetching locations:', err);
 
-        // Mock data for development since API endpoint is not implemented yet
         const mockLocations: Location[] = [
           {
             id: '672846d5c951184d705b65d7',

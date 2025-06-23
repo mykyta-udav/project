@@ -37,13 +37,13 @@ const ReservationsBanner: React.FC = () => {
           className='h-[80px] w-full object-cover sm:h-[90px] md:h-[100px] lg:h-[104px]'
         />
         <div className='absolute inset-0 flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-10'>
-          <h2 className='text-lg font-medium leading-tight text-white sm:text-xl md:text-2xl'>
+          <h2 className='text-base font-medium leading-tight text-white sm:text-lg md:text-xl lg:text-2xl'>
             Hello, {getDisplayName()} (Customer)
           </h2>
           <img
             src={VegetarianIcon}
             alt='Vegetarian Logo'
-            className='w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] md:h-[56px] md:w-[56px] lg:h-[68px] lg:w-[68px]'
+            className='w-[32px] h-[32px] sm:w-[40px] sm:h-[40px] md:w-[48px] md:h-[48px] lg:h-[68px] lg:w-[68px]'
           />
         </div>
       </div>

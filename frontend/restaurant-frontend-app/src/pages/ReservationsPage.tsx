@@ -4,6 +4,7 @@ import ReservationsBanner from '@/components/reservations/ReservationsBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ReservationResponse } from '@/types/booking';
 import { bookingAPI } from '@/services/api';
+import { Link } from 'react-router-dom';
 
 const ReservationsPage: React.FC = () => {
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
@@ -15,8 +16,8 @@ const ReservationsPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // The API now handles both local and server reservations automatically
+
+      // both local and server reservations automatically
       const data = await bookingAPI.getUserReservations();
       setReservations(data);
     } catch (error) {
@@ -37,25 +38,21 @@ const ReservationsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='text-gray-500'>Loading...</div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold text-[#232323] mb-4">
-            Sign In Required
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Please sign in to view your reservations.
-          </p>
+      <div className='flex min-h-screen flex-col items-center justify-center px-6'>
+        <div className='max-w-md text-center'>
+          <h1 className='mb-4 text-2xl font-bold text-[#232323]'>Sign In Required</h1>
+          <p className='mb-6 text-gray-600'>Please sign in to view your reservations.</p>
           <a
-            href="/login"
-            className="inline-flex items-center justify-center px-6 py-3 bg-[#00AD0C] text-white rounded-lg hover:bg-[#009A0B] transition-colors"
+            href='/login'
+            className='inline-flex items-center justify-center rounded-lg bg-[#00AD0C] px-6 py-3 text-white transition-colors hover:bg-[#009A0B]'
           >
             Sign In
           </a>
@@ -66,23 +63,21 @@ const ReservationsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading your reservations...</div>
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='text-gray-500'>Loading your reservations...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
-            Error
-          </h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+      <div className='flex min-h-screen flex-col items-center justify-center px-6'>
+        <div className='max-w-md text-center'>
+          <h1 className='mb-4 text-2xl font-bold text-red-600'>Error</h1>
+          <p className='mb-6 text-gray-600'>{error}</p>
           <button
             onClick={fetchReservations}
-            className="inline-flex items-center justify-center px-6 py-3 bg-[#00AD0C] text-white rounded-lg hover:bg-[#009A0B] transition-colors"
+            className='inline-flex items-center justify-center rounded-lg bg-[#00AD0C] px-6 py-3 text-white transition-colors hover:bg-[#009A0B]'
           >
             Try Again
           </button>
@@ -92,30 +87,28 @@ const ReservationsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className='min-h-screen bg-gray-50'>
       <ReservationsBanner />
-      
-      <div className="max-w-7xl mx-auto px-6 py-8">
+
+      <div className='mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-6 lg:py-8'>
         {/* Reservations Grid */}
         {reservations.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="max-w-md mx-auto">
-              <h2 className="text-xl font-semibold text-[#232323] mb-4">
-                No Reservations Found
-              </h2>
-              <p className="text-gray-600 mb-6">
+          <div className='py-8 text-center sm:py-12'>
+            <div className='mx-auto max-w-md px-4'>
+              <h2 className='mb-4 text-lg font-semibold text-[#232323] sm:text-xl'>No Reservations Found</h2>
+              <p className='mb-6 text-sm text-gray-600 sm:text-base'>
                 You haven't made any reservations yet. Book a table to get started.
               </p>
-              <a
-                href="/book"
-                className="inline-flex items-center justify-center px-6 py-3 bg-[#00AD0C] text-white rounded-lg hover:bg-[#009A0B] transition-colors"
+              <Link
+                to='/booking'
+                className='inline-flex items-center justify-center rounded-lg bg-[#00AD0C] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#009A0B] sm:text-base'
               >
                 Book a Table
-              </a>
+              </Link>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-32">
+          <div className='grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8'>
             {reservations.map((reservation) => (
               <ReservationCard
                 key={reservation.id}
@@ -130,4 +123,4 @@ const ReservationsPage: React.FC = () => {
   );
 };
 
-export default ReservationsPage; 
+export default ReservationsPage;
