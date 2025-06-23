@@ -5,7 +5,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.google.gson.Gson;
 import com.restaurantbackendapp.exception.LocationNotFoundException;
-import com.restaurantbackendapp.exception.PathParameterNotProvided;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.model.Dish;
 import com.restaurantbackendapp.model.Location;

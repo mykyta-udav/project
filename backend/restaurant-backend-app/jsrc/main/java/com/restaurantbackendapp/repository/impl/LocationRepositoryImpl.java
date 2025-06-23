@@ -16,7 +16,6 @@ import com.restaurantbackendapp.repository.LocationRepository;
 import javax.inject.Named;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class LocationRepositoryImpl implements LocationRepository {
     public static final String LOCATION_ID = "locationId";

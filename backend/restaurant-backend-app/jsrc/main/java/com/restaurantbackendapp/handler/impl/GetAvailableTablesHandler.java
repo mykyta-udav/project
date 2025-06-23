@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import com.restaurantbackendapp.dto.TableRequestQueryParams;
 import com.restaurantbackendapp.exception.InvalidQueryParameterException;
 import com.restaurantbackendapp.exception.LocationNotFoundException;
+import com.restaurantbackendapp.exception.TableNotFoundException;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.model.Table;
 import com.restaurantbackendapp.repository.LocationRepository;
@@ -70,7 +71,7 @@ public class GetAvailableTablesHandler implements EndpointHandler {
             QueryResult queryResult = resRepo.fetchAvailableTables(params, context);
 
             if (queryResult.getCount() == 0) {
-               throw new InvalidQueryParameterException(INVALID_QUERY_PARAMETERS);
+               throw new TableNotFoundException(INVALID_QUERY_PARAMETERS);
             }
 
             String locationAddress = locRepo.fetchLocationAddress(params, context);
@@ -83,7 +84,7 @@ public class GetAvailableTablesHandler implements EndpointHandler {
         } catch (InvalidQueryParameterException e) {
             context.getLogger().log(ERROR + e.getMessage());
             return response(400, INVALID_QUERY_PARAMETERS, e);
-        } catch (LocationNotFoundException e) {
+        } catch (LocationNotFoundException | TableNotFoundException e) {
             context.getLogger().log(ERROR + e.getMessage());//
             return response(404, RESTAURANT_NOT_FOUND, e);
         } catch (Exception e) {
