@@ -313,7 +313,7 @@
     "autoscaling": [],
     "tags": {}
   },
-  "Emails": {
+  "${waiters_emails_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "email",
     "hash_key_type": "S",
@@ -321,7 +321,16 @@
     "write_capacity": 1,
     "global_indexes": [],
     "autoscaling": [],
-    "tags": {
-    }
+    "tags": {}
+  },
+  "${users_table}": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "cognitoId",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": [],
+    "tags": {}
   }
 }
