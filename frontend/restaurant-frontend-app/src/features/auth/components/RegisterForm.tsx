@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { InputField } from '@/components/ui/input';
 import eyeOpenedIcon from '@/assets/icons/eye-opened.png';
 import eyeClosedIcon from '@/assets/icons/eye-closed.png';
-import { authAPI } from '@/services/api';
-import type { ApiError } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PasswordValidationResult {
   main: string;
@@ -88,6 +87,8 @@ const calculatePasswordStrength = (
 
 const RegisterForm = () => {
   const navigate = useNavigate();
+  const { register, isLoading } = useAuth();
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -175,7 +176,6 @@ const RegisterForm = () => {
       confirmPassword: true,
     });
 
-    // Reset API error
     setApiError('');
 
     if (!isValid) {
@@ -185,42 +185,35 @@ const RegisterForm = () => {
     setIsSubmitting(true);
 
     try {
-      await authAPI.signUp({
-        firstName,
-        lastName,
+      await register({
+        username: `${firstName} ${lastName}`,
         email,
         password,
       });
 
-      console.log('User registered successfully');
-      
-      // Redirect to login page
-      setTimeout(() => {
-        navigate('/login');
-      }, 100);
-      
+      console.log('User registered successfully with automatic role assignment');
+
+      // Redirect to main page (user is now logged in automatically)
+      navigate('/', { replace: true });
     } catch (error) {
-      const apiError = error as ApiError;
-      
-      if (apiError.status === 409) {
-        // Email already exists
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+
+      if (errorMessage.includes('already exists')) {
         setApiError('An account with this email already exists.');
-      } else if (apiError.status === 0) {
-        // Network error
+      } else if (errorMessage.includes('Network')) {
         setApiError('Unable to connect to server. Please try again.');
       } else {
-        // Other errors
-        setApiError(apiError.message || 'Registration failed. Please try again.');
+        setApiError(errorMessage || 'Registration failed. Please try again.');
       }
-      
-      console.error('Registration error:', apiError);
+
+      console.error('Registration error:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className='flex w-full max-w-lg flex-col items-start px-4 py-8 sm:px-6'>
+    <div className='flex w-[496px] flex-col items-start px-2 py-4 sm:px-4'>
       <div className='mb-16 w-full'>
         <p className='text-sm text-neutral-900 sm:text-base'>LET'S GET YOU STARTED</p>
         <h2 className='text-h3 text-neutral-900 sm:text-h2'>Create an Account</h2>
@@ -249,6 +242,7 @@ const RegisterForm = () => {
               placeholder='Enter your First Name'
               helperText='e.g. John'
               error={touched.firstName && errors.firstName ? true : undefined}
+              className='w-full'
               required
             />
             {touched.firstName && errors.firstName && (
@@ -267,6 +261,7 @@ const RegisterForm = () => {
               placeholder='Enter your Last Name'
               helperText='e.g. Doe'
               error={touched.lastName && errors.lastName ? true : undefined}
+              className='w-full'
               required
             />
             {touched.lastName && errors.lastName && (
@@ -287,6 +282,7 @@ const RegisterForm = () => {
             placeholder='Enter your Email'
             helperText='e.g. username@domain.com'
             error={touched.email && errors.email ? true : undefined}
+            className='w-full'
             required
           />
           {touched.email && errors.email && (
@@ -306,6 +302,7 @@ const RegisterForm = () => {
               onBlur={() => handleBlur('password')}
               placeholder='Enter your Password'
               error={touched.password && errors.password.main ? true : undefined}
+              className='w-full'
               required
               showPasswordStrength={password.length > 0}
               passwordStrength={passwordStrength}
@@ -314,7 +311,7 @@ const RegisterForm = () => {
               type='button'
               className='absolute right-3 cursor-pointer'
               onClick={() => setShowPassword(!showPassword)}
-              style={{ top: '46px' }}
+              style={{ top: '45px' }}
             >
               <img
                 src={showPassword ? eyeOpenedIcon : eyeClosedIcon}
@@ -404,13 +401,14 @@ const RegisterForm = () => {
               onBlur={() => handleBlur('confirmPassword')}
               placeholder='Confirm New Password'
               error={touched.confirmPassword && errors.confirmPassword ? true : undefined}
+              className='w-full'
               required
             />
             <button
               type='button'
               className='absolute right-3 cursor-pointer'
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              style={{ top: '46px' }}
+              style={{ top: '45px' }}
             >
               <img
                 src={showConfirmPassword ? eyeOpenedIcon : eyeClosedIcon}
@@ -446,9 +444,9 @@ const RegisterForm = () => {
           variant='primary'
           size='extra-large'
           className='w-full bg-green-200 text-white'
-          disabled={!isValid || isSubmitting}
+          disabled={isSubmitting || isLoading}
         >
-          {isSubmitting ? 'Creating Account...' : 'Create Account'}
+          {isSubmitting || isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
       </form>
 

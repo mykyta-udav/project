@@ -7,8 +7,6 @@ const MainLayout: React.FC = () => {
   return (
     <div className='flex min-h-screen flex-col'>
       <Header />
-
-      {/* Add this main section with Outlet */}
       <main className='flex-grow'>
         <Outlet />
       </main>

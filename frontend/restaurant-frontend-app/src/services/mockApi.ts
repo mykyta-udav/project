@@ -1,179 +1,136 @@
-import type { SignUpRequest, SignInRequest, SignUpResponse, SignInResponse, ApiError } from './api';
+import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from '@/types/auth';
+import { UserRole } from '@/types/auth';
+import { realAuthService } from './api';
 
-interface MockUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+const USE_MOCK_API =
+  import.meta.env.VITE_USE_MOCK_API === 'true' || import.meta.env.MODE === 'development';
+
+interface MockUser extends User {
   password: string;
-  role: 'CLIENT' | 'ADMIN';
-  createdAt: Date;
 }
 
-let mockUsers: MockUser[] = [
-  {
-    id: '1',
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@restaurant.com',
-    password: 'admin123',
-    role: 'ADMIN',
-    createdAt: new Date(),
-  },
-  {
-    id: '2',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    password: 'password123',
-    role: 'CLIENT',
-    createdAt: new Date(),
-  },
+// IMPORTANT: This waiter email list is used for MOCK API only
+// In production, the backend should handle role assignment based on its own waiter email list
+const WAITER_EMAILS = [
+  'waiter@restaurant.com',
+  'staff@restaurant.com',
+  'jane.waiter@restaurant.com',
+  'service@restaurant.com',
+  'waitstaff@restaurant.com',
+  'server@restaurant.com',
+  'dining.staff@restaurant.com',
 ];
 
-const generateMockToken = (user: MockUser): string => {
+const mockUsers: MockUser[] = [
+  {
+    username: 'John Customer',
+    email: 'customer@restaurant.com',
+    password: 'password123',
+    role: UserRole.CUSTOMER,
+  },
+  {
+    username: 'Jane Waiter',
+    email: 'waiter@restaurant.com',
+    password: 'password123',
+    role: UserRole.WAITER,
+  },
+  // Removed visitor mock user - visitors are unauthorized users only
+];
+
+const generateMockToken = (user: User): string => {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({
-    sub: user.email,
-    role: user.role,
-    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // 24 hours
-    iat: Math.floor(Date.now() / 1000),
-    jti: Math.random().toString(36).substr(2, 9),
-  }));
+  const payload = btoa(
+    JSON.stringify({
+      sub: user.email, // Use email as subject
+      email: user.email,
+      role: user.role,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+      iat: Math.floor(Date.now() / 1000),
+    })
+  );
   const signature = btoa('mock-signature');
   return `${header}.${payload}.${signature}`;
 };
 
+const delay = (ms: number = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const delay = (ms: number = 500) => new Promise(resolve => setTimeout(resolve, ms));
+const removePassword = (user: MockUser): User => {
+  return {
+    username: user.username,
+    email: user.email,
+    role: user.role,
+  };
+};
 
+const checkWaiterEmail = (email: string): boolean => {
+  return WAITER_EMAILS.includes(email.toLowerCase());
+};
 
-export const mockAuthAPI = {
-  signUp: async (data: SignUpRequest): Promise<SignUpResponse> => {
-    console.log('🔄 Mock API: Sign up request', data);
-    
+// NOTE: This role assignment is for MOCK API only
+// In production, the backend handles role assignment based on its own validation
+const assignRole = (email: string): UserRole => {
+  if (checkWaiterEmail(email)) {
+    return UserRole.WAITER;
+  }
+  // All new registered users get Customer role by default in mock
+  // In production, this is handled by the backend
+  return UserRole.CUSTOMER;
+};
+
+const mockAuthService = {
+  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     await delay();
 
-    if (!data.firstName || !data.lastName || !data.email || !data.password) {
-      throw {
-        message: 'All fields are required',
-        status: 400,
-      } as ApiError;
+    const user = mockUsers.find((u) => u.email === credentials.email);
+    if (!user || user.password !== credentials.password) {
+      throw new Error('Invalid email or password');
     }
 
-    const existingUser = mockUsers.find(user => user.email.toLowerCase() === data.email.toLowerCase());
+    const userWithoutPassword = removePassword(user);
+    const token = generateMockToken(userWithoutPassword);
+
+    return {
+      user: userWithoutPassword,
+      token,
+    };
+  },
+
+  register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+    await delay();
+
+    const existingUser = mockUsers.find((u) => u.email === credentials.email);
     if (existingUser) {
-      throw {
-        message: 'A user with this email address already exists.',
-        status: 409,
-      } as ApiError;
+      throw new Error('User with this email already exists');
     }
 
-
+    // Mock role assignment - in production, this is handled by the backend
+    const assignedRole = assignRole(credentials.email);
     const newUser: MockUser = {
-      id: (mockUsers.length + 1).toString(),
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email.toLowerCase(),
-      password: data.password,
-      role: 'CLIENT', // Default role
-      createdAt: new Date(),
+      username: credentials.username,
+      email: credentials.email,
+      password: credentials.password,
+      role: assignedRole,
     };
 
     mockUsers.push(newUser);
 
-    console.log('Mock API: User registered successfully', { email: newUser.email, role: newUser.role });
+    const userWithoutPassword = removePassword(newUser);
+    const token = generateMockToken(userWithoutPassword);
 
     return {
-      message: 'User registered successfully',
+      user: userWithoutPassword,
+      token,
     };
   },
 
-  signIn: async (data: SignInRequest): Promise<SignInResponse> => {
-    console.log('Mock API: Sign in request', { email: data.email });
-
-    await delay();
-
-    if (!data.email || !data.password) {
-      throw {
-        message: 'Email and password are required',
-        status: 400,
-      } as ApiError;
-    }
-
-    const user = mockUsers.find(u => u.email.toLowerCase() === data.email.toLowerCase());
-    if (!user) {
-      throw {
-        message: 'Invalid email or password',
-        status: 401,
-      } as ApiError;
-    }
-
-    if (user.password !== data.password) {
-      throw {
-        message: 'Invalid email or password',
-        status: 401,
-      } as ApiError;
-    }
-
-    const accessToken = generateMockToken(user);
-
-    console.log(' Mock API: User signed in successfully', { 
-      email: user.email, 
-      role: user.role,
-      username: `${user.firstName} ${user.lastName}`
-    });
-
-    return {
-      accessToken,
-      username: `${user.firstName} ${user.lastName}`,
-      role: user.role,
-    };
-  },
-
-  signOut: async (): Promise<void> => {
-    console.log('Mock API: Sign out request');
-    
-  
+  logout: async (): Promise<void> => {
     await delay(200);
-
-    console.log('Mock API: User signed out successfully');
-    
-    // In a real API, this might invalidate the token
-    // For mock, we just simulate the call
+    // In a real implementation, this would invalidate the token on the server
   },
 };
 
-export const getMockUsers = () => {
-  return mockUsers.map(user => ({
-    id: user.id,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    role: user.role,
-    createdAt: user.createdAt,
-  }));
-};
+export const authService = USE_MOCK_API ? mockAuthService : realAuthService;
 
-export const resetMockData = () => {
-  mockUsers = [
-    {
-      id: '1',
-      firstName: 'Admin',
-      lastName: 'User',
-      email: 'admin@restaurant.com',
-      password: 'admin123',
-      role: 'ADMIN',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      password: 'password123',
-      role: 'CLIENT',
-      createdAt: new Date(),
-    },
-  ];
-}; 
+export const mockAuthServiceExplicit = mockAuthService;
+
+export const getWaiterEmails = (): string[] => WAITER_EMAILS;
