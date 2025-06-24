@@ -1,7 +1,7 @@
 package com.restaurantbackendapp.repository;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.restaurantbackendapp.dto.TableRequestQueryParams;
+import com.restaurantbackendapp.dto.request.TableRequestQueryParams;
 import com.restaurantbackendapp.exception.LocationNotFoundException;
 import com.restaurantbackendapp.model.Location;
 import java.util.List;

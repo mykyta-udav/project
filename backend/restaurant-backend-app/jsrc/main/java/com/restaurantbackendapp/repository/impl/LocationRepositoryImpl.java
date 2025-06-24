@@ -9,7 +9,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.restaurantbackendapp.dto.TableRequestQueryParams;
+import com.restaurantbackendapp.dto.request.TableRequestQueryParams;
 import com.restaurantbackendapp.exception.LocationNotFoundException;
 import com.restaurantbackendapp.model.Location;
 import com.restaurantbackendapp.repository.LocationRepository;
