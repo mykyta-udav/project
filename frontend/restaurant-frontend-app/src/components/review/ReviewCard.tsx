@@ -1,6 +1,5 @@
 import type { Feedback } from '@/types/feedback';
 import starIcon from '../../assets/icons/star-01.png';
-import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface ReviewCardProps {
   feedback: Feedback;
@@ -40,10 +39,9 @@ const ReviewCard = ({ feedback }: ReviewCardProps) => {
         <div className="flex items-start gap-3">
           {/* Avatar */}
           <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-            <ImageWithFallback
+            <img
               src={feedback.userAvatarUrl}
               alt={feedback.userName}
-              imageType="avatar"
               className="w-full h-full object-cover"
             />
           </div>

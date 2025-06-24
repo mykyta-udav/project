@@ -29,6 +29,7 @@ const RestaurantPage = () => {
 
       try {
         setLoading(true);
+        setError(null);
         const locations = await locationsAPI.getLocations();
         const foundRestaurant = locations.find((location) => location.id === id);
 
@@ -39,37 +40,8 @@ const RestaurantPage = () => {
         }
       } catch (err) {
         console.error('Error fetching restaurant:', err);
-
-        // Mock data 
-        const mockLocations: Location[] = [
-          {
-            id: '2',
-            address: '100 Main St, Springfield',
-            description:
-              'A cozy family restaurant offering a variety of dishes and a comfortable dining experience. Located on bustling Main Street, this branch offers a perfect mix of city energy and a cozy atmosphere. Known for our fresh, locally sourced dishes, we focus on health and sustainability, serving Georgian cuisine with a modern twist. The menu includes vegetarian and vegan options along with exclusive seasonal specials.',
-            totalCapacity: '10 tables',
-            averageOccupancy: '75%',
-            imageUrl: '/src/assets/mock-images/Picture.png',
-            rating: '4.5',
-          },
-          {
-            id: '1',
-            address: '123 Main St, Springfield',
-            description:
-              'A cozy family restaurant offering a variety of dishes and a comfortable dining experience. This location specializes in traditional Georgian flavors with contemporary presentation.',
-            totalCapacity: '16 tables',
-            averageOccupancy: '75%',
-            imageUrl: '/api/placeholder/256/140',
-            rating: '4.5',
-          },
-        ];
-
-        const foundRestaurant = mockLocations.find((location) => location.id === id);
-        if (foundRestaurant) {
-          setRestaurant(foundRestaurant);
-        } else {
-          setError('Restaurant not found');
-        }
+        setError('Failed to load restaurant details');
+        setRestaurant(null);
       } finally {
         setLoading(false);
       }

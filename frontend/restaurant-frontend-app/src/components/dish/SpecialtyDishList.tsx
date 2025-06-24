@@ -16,40 +16,13 @@ const SpecialtyDishList = ({ locationId }: SpecialtyDishListProps) => {
     const fetchSpecialtyDishes = async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await dishesAPI.getSpecialityDishes(locationId);
         setDishes(data);
       } catch (err) {
         setError('Failed to load specialty dishes');
         console.error('Error fetching specialty dishes:', err);
-        
-        // Mock data for development
-        const mockSpecialtyDishes: DishType[] = [
-          {
-            name: 'Khachapuri Adjarian Style',
-            price: '18',
-            weight: '400 g',
-            imageUrl: '/api/placeholder/196/196',
-          },
-          {
-            name: 'Lobio with Georgian Bread',
-            price: '16',
-            weight: '350 g',
-            imageUrl: '/api/placeholder/196/196',
-          },
-          {
-            name: 'Pkhali Trio Plate',
-            price: '14',
-            weight: '250 g',
-            imageUrl: '/api/placeholder/196/196',
-          },
-          {
-            name: 'Churchkhela with Nuts',
-            price: '8',
-            weight: '150 g',
-            imageUrl: '/api/placeholder/196/196',
-          },
-        ];
-        setDishes(mockSpecialtyDishes);
+        setDishes([]); // Clear any existing dishes on error
       } finally {
         setLoading(false);
       }
@@ -68,10 +41,18 @@ const SpecialtyDishList = ({ locationId }: SpecialtyDishListProps) => {
     );
   }
 
-  if (error && dishes.length === 0) {
+  if (error) {
     return (
       <div className='flex h-40 items-center justify-center'>
-        <div className='text-red-500'>Failed to load specialty dishes</div>
+        <div className='text-red-500'>{error}</div>
+      </div>
+    );
+  }
+
+  if (dishes.length === 0) {
+    return (
+      <div className='flex h-40 items-center justify-center'>
+        <div className='text-gray-500'>No specialty dishes available</div>
       </div>
     );
   }

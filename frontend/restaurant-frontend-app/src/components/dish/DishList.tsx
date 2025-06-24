@@ -12,39 +12,13 @@ const DishList = () => {
     const fetchPopularDishes = async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await dishesAPI.getPopularDishes();
         setDishes(data);
       } catch (err) {
         setError('Failed to load popular dishes');
         console.error('Error fetching popular dishes:', err);
-
-        const mockDishes: DishType[] = [
-          {
-            name: 'Fresh Strawberry Mint Salad',
-            price: '12',
-            weight: '300 g',
-            imageUrl: 'src/assets/mock-images/Dish picture.png',
-          },
-          {
-            name: 'Avocado Pine Nut Bowl',
-            price: '15',
-            weight: '450 g',
-            imageUrl: '/api/placeholder/196/196',
-          },
-          {
-            name: 'Roasted Sweet Potato & Lentil Salad',
-            price: '14',
-            weight: '400 g',
-            imageUrl: '/api/placeholder/196/196',
-          },
-          {
-            name: 'Spring Salad',
-            price: '13',
-            weight: '430 g',
-            imageUrl: '/api/placeholder/196/196',
-          },
-        ];
-        setDishes(mockDishes);
+        setDishes([]); // Clear any existing dishes on error
       } finally {
         setLoading(false);
       }
@@ -61,10 +35,18 @@ const DishList = () => {
     );
   }
 
-  if (error && dishes.length === 0) {
+  if (error) {
     return (
       <div className='flex h-40 items-center justify-center'>
-        <div className='text-red-500'>Failed to load dishes</div>
+        <div className='text-red-500'>{error}</div>
+      </div>
+    );
+  }
+
+  if (dishes.length === 0) {
+    return (
+      <div className='flex h-40 items-center justify-center'>
+        <div className='text-gray-500'>No popular dishes available</div>
       </div>
     );
   }

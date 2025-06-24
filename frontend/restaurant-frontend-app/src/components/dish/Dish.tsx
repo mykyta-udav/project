@@ -1,5 +1,4 @@
 import type { Dish as DishType } from '@/types/dish';
-import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface DishProps {
   dish: DishType;
@@ -21,13 +20,8 @@ const Dish = ({ dish }: DishProps) => {
         }}
       >
         {/* UNCOMMENT LATER */}
-            {/* <img src={dish.imageUrl} alt={dish.name} className='h-full w-full object-cover' /> */}
-        <ImageWithFallback 
-          src={dish.imageUrl} 
-          alt={dish.name} 
-          imageType="dish"
-          className='h-full w-full object-cover' 
-        />
+        <img src={dish.imageUrl} alt={'image is not avaliable'} className='h-full w-full object-cover' />
+
       </div>
 
       {/* Content  */}

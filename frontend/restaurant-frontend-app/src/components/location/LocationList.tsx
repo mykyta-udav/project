@@ -12,42 +12,13 @@ const LocationList = () => {
     const fetchLocations = async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await locationsAPI.getLocations();
         setLocations(data);
       } catch (err) {
         setError('Failed to load locations');
         console.error('Error fetching locations:', err);
-
-        const mockLocations: Location[] = [
-          {
-            id: '672846d5c951184d705b65d7',
-            address: '48 Rustaveli Avenue',
-            description: 'Located on bustling Rustaveli Avenue, this branch offers a perfect mix of city energy and a cozy atmosphere. Known for our fresh, locally sourced dishes, we focus on health and sustainability, serving Georgian cuisine with a modern twist. The menu includes vegetarian and vegan options along with exclusive seasonal specials. With its spacious outdoor terrace, this location is ideal for both casual lunches and intimate dinners.',
-            totalCapacity: '10 tables',
-            averageOccupancy: '90%',
-            imageUrl: '/src/assets/mock-images/Picture.png',
-            rating: '4.8',
-          },
-          {
-            id: '672846d5c951184d705b65d8',
-            address: '14 Baratashvili Street',
-            description: 'Our cozy branch on Baratashvili Street offers an intimate dining experience with warm atmosphere and exceptional service. This location specializes in traditional Georgian flavors with contemporary presentation.',
-            totalCapacity: '16 tables',
-            averageOccupancy: '78%',
-            imageUrl: '/api/placeholder/256/140',
-            rating: '4.6',
-          },
-          {
-            id: '672846d5c951184d705b65d9',
-            address: '9 Abashidze Street',
-            description: 'Located in the heart of Saburtalo, this spacious restaurant features modern décor and an extensive menu. Perfect for families and large groups, offering both indoor and outdoor seating.',
-            totalCapacity: '20 tables',
-            averageOccupancy: '85%',
-            imageUrl: '/api/placeholder/256/140',
-            rating: '4.7',
-          },
-        ];
-        setLocations(mockLocations);
+        setLocations([]); // Clear any existing locations on error
       } finally {
         setLoading(false);
       }
@@ -64,10 +35,18 @@ const LocationList = () => {
     );
   }
 
-  if (error && locations.length === 0) {
+  if (error) {
     return (
       <div className='flex h-40 items-center justify-center'>
-        <div className='text-red-500'>Failed to load locations</div>
+        <div className='text-red-500'>{error}</div>
+      </div>
+    );
+  }
+
+  if (locations.length === 0) {
+    return (
+      <div className='flex h-40 items-center justify-center'>
+        <div className='text-gray-500'>No locations available</div>
       </div>
     );
   }

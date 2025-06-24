@@ -346,9 +346,9 @@ export const feedbackAPI = {
         size
       };
       
-      // Add sort parameters if provided
+      // Add sort parameter as a single string if provided
       if (sort && sort.length > 0) {
-        params.sort = sort;
+        params.sort = sort[0]; // Send as single string instead of array
       }
       
       const response = await api.get<FeedbackResponse>(`/locations/${locationId}/feedbacks`, {
