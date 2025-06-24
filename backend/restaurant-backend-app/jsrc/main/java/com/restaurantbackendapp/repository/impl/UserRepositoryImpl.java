@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.restaurantbackendapp.model.User;
+import com.restaurantbackendapp.model.enums.UserRole;
 import com.restaurantbackendapp.repository.UserRepository;
 
 import javax.inject.Named;
@@ -30,9 +31,12 @@ public class UserRepositoryImpl implements UserRepository {
         item.put("firstName", new AttributeValue().withS(user.getFirstName()));
         item.put("lastName", new AttributeValue().withS(user.getLastName()));
 
-
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
             item.put("profileImageUrl", new AttributeValue().withS(user.getProfileImageUrl()));
+        }
+
+        if (user.getUserRole() != null) {
+            item.put("role", new AttributeValue().withS(user.getUserRole().getValue()));
         }
 
         PutItemRequest request = new PutItemRequest()
@@ -63,12 +67,11 @@ public class UserRepositoryImpl implements UserRepository {
                 item.get("email").getS(),
                 item.get("firstName").getS(),
                 item.get("lastName").getS(),
-                item.containsKey("profileImageUrl") ? item.get("profileImageUrl").getS() : ""
+                item.containsKey("profileImageUrl") ? item.get("profileImageUrl").getS() : "",
+                UserRole.fromValue(item.get("role").getS())
         );
 
         return Optional.of(user);
 
     }
 }
-
-

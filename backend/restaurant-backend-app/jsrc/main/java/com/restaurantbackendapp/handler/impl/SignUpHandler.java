@@ -7,27 +7,26 @@ import com.google.gson.Gson;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.dto.SignUpRequestDto;
 import com.restaurantbackendapp.model.User;
+import com.restaurantbackendapp.model.enums.UserRole;
 import com.restaurantbackendapp.repository.UserRepository;
 import com.restaurantbackendapp.repository.WaiterRepository;
+import com.restaurantbackendapp.utils.RandomSecurePasswordGeneratorUtil;
 import lombok.experimental.FieldDefaults;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.security.SecureRandom;
 import java.util.Map;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class SignUpHandler implements EndpointHandler {
-
     CognitoIdentityProviderClient cognitoClient;
     String userPoolId;
     Gson gson;
     WaiterRepository waiterRepository;
-
     UserRepository userRepository;
 
     static String GROUP_CUSTOMER = "Customer";
@@ -40,8 +39,7 @@ public class SignUpHandler implements EndpointHandler {
             @Named("userPoolId") String userPoolId,
             WaiterRepository waiterRepository,
             UserRepository userRepository,
-            Gson gson
-    ) {
+            Gson gson) {
         this.cognitoClient = cognitoClient;
         this.userPoolId = userPoolId;
         this.waiterRepository = waiterRepository;
@@ -77,10 +75,8 @@ public class SignUpHandler implements EndpointHandler {
 
             AttributeType emailAttr = AttributeType.builder().name("email").value(email).build();
             AttributeType emailVerifiedAttr = AttributeType.builder().name("email_verified").value("true").build();
-            //AttributeType firstNameAttr = AttributeType.builder().name("custom:firstName").value(signUpRequest.getFirstName().trim()).build();
-            //AttributeType lastNameAttr = AttributeType.builder().name("custom:lastName").value(signUpRequest.getLastName().trim()).build();
 
-            String tempPassword = generateSecureTempPassword();
+            String tempPassword = RandomSecurePasswordGeneratorUtil.generate(TEMP_PASSWORD_LENGTH);
 
             AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
                     .userPoolId(userPoolId)
@@ -124,7 +120,9 @@ public class SignUpHandler implements EndpointHandler {
                 return response(404, "Failed to extract user ID from Cognito");
             }
 
-            User user = new User(sub, email, signUpRequest.getFirstName().trim(), signUpRequest.getLastName().trim(), "");
+            UserRole userRole = UserRole.fromValue(roleGroup);
+
+            User user = new User(sub, email, signUpRequest.getFirstName().trim(), signUpRequest.getLastName().trim(), "", userRole);
             userRepository.save(user);
 
             return response(201, "User registered successfully");
@@ -147,23 +145,4 @@ public class SignUpHandler implements EndpointHandler {
                 .withBody(gson.toJson(Map.of("message", message)));
     }
 
-    private String generateSecureTempPassword() {
-        String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
-        String CHAR_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String NUMBER = "0123456789";
-        String SPECIAL_CHARS = "!@#$%&*()-_=+";
-        String PASSWORD_ALLOW_BASE = CHAR_LOWER + CHAR_UPPER + NUMBER + SPECIAL_CHARS;
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder(TEMP_PASSWORD_LENGTH);
-
-        sb.append(CHAR_LOWER.charAt(random.nextInt(CHAR_LOWER.length())));
-        sb.append(CHAR_UPPER.charAt(random.nextInt(CHAR_UPPER.length())));
-        sb.append(NUMBER.charAt(random.nextInt(NUMBER.length())));
-        sb.append(SPECIAL_CHARS.charAt(random.nextInt(SPECIAL_CHARS.length())));
-        for (int i = 4; i < TEMP_PASSWORD_LENGTH; i++) {
-            int rndCharAt = random.nextInt(PASSWORD_ALLOW_BASE.length());
-            sb.append(PASSWORD_ALLOW_BASE.charAt(rndCharAt));
-        }
-        return sb.toString();
-    }
 }

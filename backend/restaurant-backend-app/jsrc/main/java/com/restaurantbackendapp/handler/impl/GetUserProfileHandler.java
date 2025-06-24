@@ -8,37 +8,40 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.google.gson.Gson;
 import com.restaurantbackendapp.dto.UserProfileResponseDto;
 import com.restaurantbackendapp.handler.EndpointHandler;
+import com.restaurantbackendapp.model.User;
 import com.restaurantbackendapp.model.enums.UserRole;
 import jakarta.inject.Inject;
-
+import lombok.experimental.FieldDefaults;
 
 import java.util.Map;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class GetUserProfileHandler implements EndpointHandler {
+    Gson gson;
+    UserContextResolver userContextResolver;
 
-    private final Gson gson;
-
-    private final UserContextResolver userContextResolver;
+    UserContextService userContextService;
 
     @Inject
 
-    public GetUserProfileHandler(Gson gson, UserContextResolver userContextResolver) {
+    public GetUserProfileHandler(Gson gson, UserContextResolver userContextResolver, UserContextService userContextService) {
         this.gson = gson;
         this.userContextResolver = userContextResolver;
+        this.userContextService = userContextService;
     }
 
     @Override
     public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
         try {
             Map<String, Object> claims = extractClaims(requestEvent);
-            if (claims == null) {
+            if (claims == null || claims.isEmpty()) {
                 return unauthorizedResponse("Unauthorized - no claims found");
             }
             context.getLogger().log("Request Context: " + gson.toJson(requestEvent.getRequestContext()));
 
-            String firstName = (String) claims.getOrDefault("custom:firstName", "");
-            String lastName = (String) claims.getOrDefault("custom:lastName", "");
-            String email = (String) claims.getOrDefault("email", "");
+            User user = userContextService.getCurrentUser(claims);
 
             UserRole role = userContextResolver.resolveUserRole(claims);
             if (role == null) {
@@ -46,11 +49,11 @@ public class GetUserProfileHandler implements EndpointHandler {
             }
 
             UserProfileResponseDto responseDto = UserProfileResponseDto.builder()
-                    .firstName(firstName)
-                    .lastName(lastName)
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
                     .role(role.getValue())
-                    .email(email)
-                    .imageUrl("")
+                    .email(user.getEmail())
+                    .imageUrl(user.getProfileImageUrl())
                     .build();
 
             return successResponse(responseDto);
@@ -60,15 +63,16 @@ public class GetUserProfileHandler implements EndpointHandler {
             return errorResponse(500, "Internal Server Error");
         }
 
-
     }
 
-
     private Map<String, Object> extractClaims(APIGatewayProxyRequestEvent requestEvent) {
-        return (Map<String, Object>) requestEvent
-                .getRequestContext()
-                .getAuthorizer()
-                .get("claims");
+        try {
+            return (Map<String, Object>) requestEvent.getRequestContext()
+                    .getAuthorizer()
+                    .get("claims");
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private APIGatewayProxyResponseEvent unauthorizedResponse(String message) {
