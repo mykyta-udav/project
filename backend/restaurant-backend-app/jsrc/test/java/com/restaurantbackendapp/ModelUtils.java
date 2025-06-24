@@ -1,6 +1,6 @@
 package com.restaurantbackendapp;
 
-import com.restaurantbackendapp.dto.TableRequestQueryParams;
+import com.restaurantbackendapp.dto.request.TableRequestQueryParams;
 
 public class ModelUtils {
     private ModelUtils() {}

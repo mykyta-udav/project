@@ -9,9 +9,9 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.QueryRequest;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
 import com.amazonaws.services.dynamodbv2.model.Select;
-import com.restaurantbackendapp.dto.PageFeedbackResponse;
-import com.restaurantbackendapp.dto.PageableObject;
-import com.restaurantbackendapp.dto.SortObject;
+import com.restaurantbackendapp.dto.response.PageFeedbackResponse;
+import com.restaurantbackendapp.dto.response.PageableObject;
+import com.restaurantbackendapp.dto.response.SortObject;
 import com.restaurantbackendapp.model.Feedback;
 import com.restaurantbackendapp.repository.FeedbackRepository;
 import javax.inject.Named;
@@ -21,6 +21,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FeedbackRepositoryImpl implements FeedbackRepository {
+    public static final String FEEDBACKS_BY_TYPE_INDEX = "FeedbacksByTypeIndex";
+    public static final String RATE = "rate";
+    public static final String DATE = "date";
+    public static final String DESC = "desc";
     private final Map<Integer, Map<String, AttributeValue>> paginationKeys = new ConcurrentHashMap<>();
     public static final String DB_CLIENT = "dynamoDbClient";
     private static final String FEEDBACK_TABLE = "FEEDBACK_TABLE";
@@ -49,7 +53,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
         Integer totalNumber = getTotalNumber(expressionAttributeValues);
 
         DynamoDBQueryExpression<Feedback> queryExpression = new DynamoDBQueryExpression<Feedback>()
-                .withIndexName("FeedbacksByTypeIndex")
+                .withIndexName(FEEDBACKS_BY_TYPE_INDEX)
                 .withKeyConditionExpression("locationId = :locationId AND #type = :type")
                 .withExpressionAttributeNames(Map.of("#type", "type"))
                 .withExpressionAttributeValues(expressionAttributeValues)
@@ -76,7 +80,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     private Integer getTotalNumber(Map<String, AttributeValue> expressionAttributeValues) {
         QueryRequest queryRequest = new QueryRequest()
                 .withTableName(System.getenv(FEEDBACK_TABLE))
-                .withIndexName("FeedbacksByTypeIndex")
+                .withIndexName(FEEDBACKS_BY_TYPE_INDEX)
                 .withKeyConditionExpression("locationId = :locationId AND #type = :type")
                 .withExpressionAttributeNames(Map.of("#type", "type"))
                 .withExpressionAttributeValues(expressionAttributeValues)
@@ -89,12 +93,12 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
 
     private List<Feedback> sortFeedbacks( List<Feedback> feedbacks, String sortProperty, String sortDirection) {
         Comparator<Feedback> comparator = switch (sortProperty) {
-            case "rate" -> Comparator.comparing(Feedback::getRate);
-            case "date" -> Comparator.comparing(Feedback::getDate);
+            case RATE -> Comparator.comparing(Feedback::getRate);
+            case DATE -> Comparator.comparing(Feedback::getDate);
             default -> throw new IllegalArgumentException("Unsupported sort property: " + sortProperty);
         };
 
-        if ("desc".equalsIgnoreCase(sortDirection)) {
+        if (DESC.equalsIgnoreCase(sortDirection)) {
             comparator = comparator.reversed();
         }
 
@@ -153,8 +157,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
         }
     }
 
-    // Retrieve the ExclusiveStartKey for a page
     private Map<String, AttributeValue> getExclusiveStartKey(int page) {
-        return paginationKeys.getOrDefault(page, null); // Return null if no key exists
+        return paginationKeys.getOrDefault(page, null);
     }
 }
