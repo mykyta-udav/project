@@ -46,8 +46,8 @@ public class GetMainPageLocationsHandler implements EndpointHandler {
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
                     .withBody(gson.toJson(Map.of(
-                            "error", "Internal Server Error",
-                            "message", e.getMessage()
+                            ERROR, "Internal Server Error",
+                            MESSAGE, e.getMessage()
                     )));
         }
     }

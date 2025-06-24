@@ -1,18 +1,20 @@
 package com.restaurantbackendapp.handler.impl;
 
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.QueryResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.google.gson.Gson;
-import com.restaurantbackendapp.dto.TableRequestQueryParams;
+import com.restaurantbackendapp.dto.request.TableRequestQueryParams;
 import com.restaurantbackendapp.exception.InvalidQueryParameterException;
 import com.restaurantbackendapp.exception.LocationNotFoundException;
+import com.restaurantbackendapp.exception.TableNotFoundException;
 import com.restaurantbackendapp.handler.EndpointHandler;
+import com.restaurantbackendapp.dto.response.TableResponse;
+import com.restaurantbackendapp.model.Reservation;
 import com.restaurantbackendapp.model.Table;
 import com.restaurantbackendapp.repository.LocationRepository;
 import com.restaurantbackendapp.repository.ReservationRepository;
+import com.restaurantbackendapp.repository.TableRepository;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.annotations.NotNull;
 import javax.inject.Inject;
@@ -42,13 +44,20 @@ public class GetAvailableTablesHandler implements EndpointHandler {
     public static final String MESSAGE = "Message";
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static final String INVALID_QUERY_PARAMETERS = "Invalid query parameters";
-    private final ReservationRepository resRepo;
+    public static final String RESTAURANT_NOT_FOUND = "Restaurant Not Found";
+    public static final String AVAILABLE = "AVAILABLE";
+    private final TableRepository tableRepository;
+    private final ReservationRepository reservationRepo;
     private final LocationRepository locRepo;
     private final Gson gson;
 
     @Inject
-    public GetAvailableTablesHandler(ReservationRepository resRepo, Gson gson, LocationRepository locRepo) {
-        this.resRepo = resRepo;
+    public GetAvailableTablesHandler(TableRepository tableRepository,
+                                     Gson gson,
+                                     LocationRepository locRepo,
+                                     ReservationRepository reservationRepo) {
+        this.tableRepository = tableRepository;
+        this.reservationRepo = reservationRepo;
         this.gson = gson;
         this.locRepo = locRepo;
     }
@@ -66,44 +75,85 @@ public class GetAvailableTablesHandler implements EndpointHandler {
     public APIGatewayProxyResponseEvent handle(@NotNull APIGatewayProxyRequestEvent requestEvent, @NotNull Context context) {
         try {
             TableRequestQueryParams params = extractTableRequestParams(requestEvent);
-            QueryResult queryResult = resRepo.fetchAvailableTables(params, context);
+            List<Table> tableList = tableRepository.findAllTablesByLocationId(params.locationId());
 
-            if (queryResult.getCount() == 0) {
-               throw new InvalidQueryParameterException(INVALID_QUERY_PARAMETERS);
-            }
+            List<String> tableIds = tableList.stream()
+                    .map(Table::getTableId)
+                    .toList();
+
+            tableList = applyFilters(params, tableList);
+
+            List<Reservation> reservations = reservationRepo.fetchAllReservationsByTablesIds(tableIds, params, context);
+
+            List<Table> availableTables = tableList.stream()
+                    .filter(table -> reservations.stream()
+                            .map(Reservation::getTableId)
+                            .noneMatch(resTableId -> resTableId.equals(table.getTableId()))
+                    )
+                    .toList();
 
             String locationAddress = locRepo.fetchLocationAddress(params, context);
-            Map<String, Table> tableMap = buildTableAvailabilityMap(queryResult, locationAddress);
+
+            List<TableResponse> response = availableTables.stream()
+                    .map(table -> TableResponse.builder()
+                            .locationId(table.getLocationId())
+                            .locationAddress(locationAddress)
+                            .tableNumber(table.getTableNumber())
+                            .capacity(table.getGuests())
+                            .availableSlots(table.getAvailableSlots())
+                            .build()
+                    )
+                    .toList();
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(gson.toJson(tableMap.values()));
+                    .withBody(gson.toJson(response));
 
         } catch (InvalidQueryParameterException e) {
             context.getLogger().log(ERROR + e.getMessage());
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(400)
-                    .withBody(gson.toJson(Map.of(
-                            ERROR, INVALID_QUERY_PARAMETERS,
-                            MESSAGE, e.getMessage()
-                    )));
-        } catch (LocationNotFoundException e) {
-            context.getLogger().log(ERROR + e.getMessage());
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(404)
-                    .withBody(gson.toJson(Map.of(
-                            ERROR, "Restaurant Not Found",
-                            MESSAGE, "There are no available tables"
-                    )));
+            return response(400, INVALID_QUERY_PARAMETERS, e);
+        } catch (LocationNotFoundException | TableNotFoundException e) {
+            context.getLogger().log(ERROR + e.getMessage());//
+            return response(404, RESTAURANT_NOT_FOUND, e);
         } catch (Exception e) {
             context.getLogger().log(ERROR + e.getMessage());
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(500)
-                    .withBody(gson.toJson(Map.of(
-                            ERROR, INTERNAL_SERVER_ERROR,
-                            MESSAGE, e.getMessage()
-                    )));
+            return response(500, INTERNAL_SERVER_ERROR, e);
         }
+    }
+
+    private static List<Table> applyFilters(TableRequestQueryParams params, List<Table> scanResponse) {
+        if (StringUtils.isNotEmpty(params.time())) {
+            LocalTime filterTime = LocalTime.parse(params.time(),  DateTimeFormatter.ISO_LOCAL_TIME);
+            scanResponse = scanResponse.stream()
+                    .peek(table -> {
+                        List<String> filteredSlots = table.getAvailableSlots().stream()
+                                .filter(slot -> {
+                                    String[] timeRange = slot.split("-");
+                                    LocalTime startTime = LocalTime.parse(timeRange[0], DateTimeFormatter.ISO_LOCAL_TIME);
+                                    return filterTime.isBefore(startTime);
+                                })
+                                .toList();
+                        table.setAvailableSlots(filteredSlots);
+                    })
+                    .filter(table -> !table.getAvailableSlots().isEmpty())
+                    .toList();
+        }
+
+        if (StringUtils.isNotEmpty(params.guests())) {
+            Integer guests = Integer.valueOf(params.guests());
+            scanResponse = scanResponse.stream()
+                    .filter(table -> table.getGuests().compareTo(guests) <= 0)
+                    .toList();
+        }
+        return scanResponse;
+    }
+
+    private APIGatewayProxyResponseEvent response(int statusCode, String message, Throwable e) {
+        return new APIGatewayProxyResponseEvent()
+                .withStatusCode(statusCode)
+                .withBody(gson.toJson(Map.of(
+                        ERROR, message,
+                        MESSAGE, e.getMessage())));
     }
 
     private TableRequestQueryParams extractTableRequestParams(APIGatewayProxyRequestEvent requestEvent) {
@@ -117,34 +167,6 @@ public class GetAvailableTablesHandler implements EndpointHandler {
         String guests = queryParams.get(GUESTS);
 
         return new TableRequestQueryParams(locationId, date, time, guests);
-    }
-
-    private Map<String, Table> buildTableAvailabilityMap(QueryResult queryResult, String locationAddress) {
-        Map<String, Table> tableMap = new HashMap<>();
-
-        List<Map<String, AttributeValue>> items = queryResult.getItems();
-        if (items == null || items.isEmpty()) {
-            return tableMap;
-        }
-
-        queryResult.getItems().forEach(item -> {
-            String tableNumber = item.get(TABLE_NUMBER).getS();
-
-            Table table = tableMap.computeIfAbsent(tableNumber,
-                    tn -> new Table(
-                            item.get(LOCATION_ID).getS(),
-                            locationAddress,
-                            tableNumber,
-                            item.get(GUESTS).getN(),
-                            new ArrayList<>()
-                    )
-            );
-            String startTime = item.get(TIME).getS();
-            String endTime = LocalTime.parse(startTime, DateTimeFormatter.ISO_LOCAL_TIME)
-                            .plusMinutes(90L).toString();
-            table.addTimeSlot(String.format("%s-%s", startTime, endTime));
-        });
-        return tableMap;
     }
 
     private void validateParameters(Map<String, String> queryParams) {
