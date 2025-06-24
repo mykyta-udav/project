@@ -16,6 +16,7 @@ import com.restaurantbackendapp.repository.DishRepository;
 import com.restaurantbackendapp.repository.FeedbackRepository;
 import com.restaurantbackendapp.repository.LocationRepository;
 import com.restaurantbackendapp.repository.ReservationRepository;
+import com.restaurantbackendapp.repository.TableRepository;
 import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoMap;
@@ -63,8 +64,8 @@ public class HandlersModule {
     @Provides
     @IntoMap
     @StringKey("GET:/bookings/tables")
-    public EndpointHandler provideGetTablesHandler(ReservationRepository repo, Gson gson,  LocationRepository locRepo) {
-        return new GetAvailableTablesHandler(repo, gson, locRepo);
+    public EndpointHandler provideGetTablesHandler(ReservationRepository repo, Gson gson, LocationRepository locRepo, TableRepository tRepo) {
+        return new GetAvailableTablesHandler(tRepo, gson, locRepo, repo);
     }
 
     @Singleton

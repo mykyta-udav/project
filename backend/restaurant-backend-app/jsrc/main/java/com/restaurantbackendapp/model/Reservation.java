@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import java.util.List;
 
 @DynamoDBTable(tableName = "dummy")
 @Builder
@@ -18,19 +17,34 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class Table {
+public class Reservation {
     @DynamoDBHashKey
+    private String id;
+
+    @DynamoDBAttribute
+    private String status;
+
+    @DynamoDBAttribute
+    private String locationAddress;
+
+    @DynamoDBAttribute
     private String tableId;
 
     @DynamoDBAttribute
-    private String locationId;
+    private String date;
 
     @DynamoDBAttribute
-    private Integer tableNumber;
+    private String timeSlot;
 
     @DynamoDBAttribute
-    private Integer guests;
+    private String preOrder;
 
     @DynamoDBAttribute
-    private List<String> availableSlots;
+    private String guestsNumber;
+
+    @DynamoDBAttribute
+    private String feedbackId;
+
+//    private String customerId;
+//    private String waiterId;
 }

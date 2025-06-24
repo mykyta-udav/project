@@ -256,15 +256,38 @@
     "autoscaling": [],
     "tags": {}
   },
-  "${reservations_table}": {
+  "${tables_table}": {
     "resource_type": "dynamodb_table",
-    "hash_key_name": "reservationId",
+    "hash_key_name": "tableId",
     "hash_key_type": "S",
     "read_capacity": 1,
     "write_capacity": 1,
     "global_indexes": [
       {
-        "name": "LocationDateIndex",
+        "name": "LocationIndex",
+        "index_key_name": "locationId",
+        "index_key_type": "S"
+      }
+    ],
+    "autoscaling": [],
+    "tags": {}
+  },
+  "${reservations_table}": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "id",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [
+      {
+        "name": "ReservationsByTableIdsIndex",
+        "index_key_name": "tableId",
+        "index_key_type": "S",
+        "index_sort_key_name": "date",
+        "index_sort_key_type": "S"
+      },
+      {
+        "name": "LocationIndex",
         "index_key_name": "locationId",
         "index_key_type": "S"
       },
@@ -313,7 +336,7 @@
     "autoscaling": [],
     "tags": {}
   },
-  "${waiters_emails_table}": {
+  "${waiters_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "email",
     "hash_key_type": "S",

@@ -1,4 +1,4 @@
-package com.restaurantbackendapp.dto;
+package com.restaurantbackendapp.dto.response;
 
 import com.restaurantbackendapp.model.Feedback;
 import lombok.Builder;
