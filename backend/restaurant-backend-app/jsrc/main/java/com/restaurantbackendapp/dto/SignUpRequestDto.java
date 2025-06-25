@@ -1,5 +1,6 @@
 package com.restaurantbackendapp.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
