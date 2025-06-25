@@ -137,14 +137,11 @@ export const authAPI = {
       const response = await api.post<SignInResponse>('/auth/sign-in', data);
       return response.data;
     } catch (error: unknown) {
-      // Handle specific signin errors
       const apiError = error as ApiError;
       if (apiError.status === 401 || apiError.status === 403) {
         throw new Error('Invalid email or password');
       }
-      
-      // For other errors, throw the original error with message
-      throw new Error(apiError.message || 'Login failed');
+      throw error;
     }
   },
 
