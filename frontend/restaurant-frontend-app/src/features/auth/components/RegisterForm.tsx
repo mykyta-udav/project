@@ -84,7 +84,7 @@ const calculatePasswordStrength = (
   return 'strong';
 };
 
-const RegisterFormRedux = () => {
+const RegisterForm = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
@@ -459,4 +459,4 @@ const RegisterFormRedux = () => {
   );
 };
 
-export default RegisterFormRedux;
+export default RegisterForm;

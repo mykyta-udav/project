@@ -1,4 +1,4 @@
-import RegisterFormRedux from '../components/RegisterFormRedux';
+import RegisterForm from '../components/RegisterForm';
 import AuthImage from '../components/AuthImage';
 
 const RegisterPage = () => {
@@ -11,7 +11,7 @@ const RegisterPage = () => {
 
         <div className='flex w-full flex-col items-center justify-center gap-8 lg:flex-row lg:gap-[60px]'>
           <div className='flex w-full flex-col items-center justify-center lg:w-1/2'>
-            <RegisterFormRedux />
+            <RegisterForm />
           </div>
 
           <div className='hidden w-full flex-col items-center justify-center py-6 lg:flex lg:w-1/2'>

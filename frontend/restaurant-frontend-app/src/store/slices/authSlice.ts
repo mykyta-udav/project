@@ -143,6 +143,9 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.isLoading = false;
         state.error = null;
+        
+        // notify AuthContext about the state change
+        window.dispatchEvent(new CustomEvent('authStateChanged'));
       })
       .addCase(registerUser.rejected, (state, action) => {
         console.log('Registration rejected', action.payload);
@@ -165,6 +168,9 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.isLoading = false;
         state.error = null;
+        
+        // notify AuthContext about the state change
+        window.dispatchEvent(new CustomEvent('authStateChanged'));
       })
       .addCase(loginUser.rejected, (state, action) => {
         console.log('Login rejected', action.payload);

@@ -6,7 +6,7 @@ import AuthLayout from './layouts/AuthLayout';
 import HomePage from './pages/HomePage';
 import RestaurantPage from './pages/RestaurantPage';
 import LoginPage from './features/auth/pages/LoginPage';
-import RegisterPage from './features/auth/pages/RegisterPageTest';
+import RegisterPage from './features/auth/pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import BookPage from './pages/BookPage';
 import ReservationsPage from './pages/ReservationsPage';
