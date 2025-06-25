@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { InputField } from '@/components/ui/input';
 import eyeOpenedIcon from '@/assets/icons/eye-opened.png';
 import eyeClosedIcon from '@/assets/icons/eye-closed.png';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { registerUser, clearError } from '@/store/slices/authSlice';
+import type { RootState } from '@/store';
 
 interface PasswordValidationResult {
   main: string;
@@ -23,7 +25,6 @@ const validateName = (name: string, field: string): string => {
   if (name.length > 50 || !/^[a-zA-Z\-']+$/.test(name)) {
     return `${field} must be up to 50 characters. Only Latin letters, hyphens, and apostrophes are allowed.`;
   }
-
   return '';
 };
 
@@ -36,7 +37,6 @@ const validateEmail = (email: string): string => {
   if (!emailRegex.test(email)) {
     return 'Invalid email address. Please ensure it follows the format: username@domain.com';
   }
-
   return '';
 };
 
@@ -53,7 +53,6 @@ const validatePassword = (password: string): PasswordValidationResult => {
   if (!password) {
     validationResult.main = 'Password is required';
   }
-
   return validationResult;
 };
 
@@ -87,8 +86,16 @@ const calculatePasswordStrength = (
 
 const RegisterForm = () => {
   const navigate = useNavigate();
-  const { register, isLoading } = useAuth();
+  const dispatch = useAppDispatch();
+  
+  // redux state
+  const { isLoading, error: authError, isAuthenticated } = useAppSelector((state: RootState) => state.auth);
+  
+  useEffect(() => {
+    console.log('Redux Form - Current state:', { isLoading, authError, isAuthenticated });
+  }, [isLoading, authError, isAuthenticated]);
 
+  // local form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -121,12 +128,8 @@ const RegisterForm = () => {
   });
 
   const [isValid, setIsValid] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [apiError, setApiError] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleBlur = (
     field: 'firstName' | 'lastName' | 'email' | 'password' | 'confirmPassword'
@@ -165,8 +168,16 @@ const RegisterForm = () => {
     );
   }, [firstName, lastName, email, password, confirmPassword]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('Redux Form - Submit started', { isValid, isLoading });
 
     setTouched({
       firstName: true,
@@ -176,39 +187,26 @@ const RegisterForm = () => {
       confirmPassword: true,
     });
 
-    setApiError('');
-
     if (!isValid) {
+      console.log('Redux Form - Form is invalid, skipping submission');
       return;
     }
 
-    setIsSubmitting(true);
+    const credentials = {
+      username: `${firstName} ${lastName}`,
+      email,
+      password,
+    };
+
+    console.log('Redux Form - Dispatching registerUser with:', credentials);
 
     try {
-      await register({
-        username: `${firstName} ${lastName}`,
-        email,
-        password,
-      });
-
-      console.log('User registered successfully with automatic role assignment');
-
-      // Redirect to main page (user is now logged in automatically)
+      const result = await dispatch(registerUser(credentials)).unwrap();
+      console.log('Redux Form - Registration successful:', result);
       navigate('/', { replace: true });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-
-      if (errorMessage.includes('already exists')) {
-        setApiError('An account with this email already exists.');
-      } else if (errorMessage.includes('Network')) {
-        setApiError('Unable to connect to server. Please try again.');
-      } else {
-        setApiError(errorMessage || 'Registration failed. Please try again.');
-      }
-
-      console.error('Registration error:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Redux Form - Registration failed:', error);
+      // error is handled by Redux state and will be displayed via authError
     }
   };
 
@@ -219,13 +217,13 @@ const RegisterForm = () => {
         <h2 className='text-h3 text-neutral-900 sm:text-h2'>Create an Account</h2>
       </div>
 
-      {apiError && (
+      {authError && (
         <div className='mb-8 flex w-full flex-wrap items-center gap-2 rounded-lg bg-[#FCE9ED] p-4'>
           <p
             className='text-[14px] font-[300] leading-[24px] text-[#B70B0B]'
             style={{ fontFamily: 'Poppins' }}
           >
-            {apiError}
+            {authError}
           </p>
         </div>
       )}
@@ -444,9 +442,9 @@ const RegisterForm = () => {
           variant='primary'
           size='extra-large'
           className='w-full bg-green-200 text-white'
-          disabled={isSubmitting || isLoading}
+          disabled={isLoading}
         >
-          {isSubmitting || isLoading ? 'Creating Account...' : 'Create Account'}
+          {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
       </form>
 

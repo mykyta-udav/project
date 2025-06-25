@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { InputField } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-// import { UserRole } from '@/types/auth';
 
 type LoginError = 'none' | 'empty' | 'invalid' | 'locked';
 
@@ -62,19 +61,6 @@ const LoginForm = () => {
     }
   }, [email, password, loginError]);
 
-  // // Role-based redirect function
-  // const getRedirectPath = (userRole: UserRole): string => {
-  //   switch (userRole) {
-  //     case UserRole.WAITER:
-  //       return '/waiter-dashboard';
-  //     case UserRole.VISITOR:
-  //       return '/visitor-area';
-  //     case UserRole.CUSTOMER:
-  //     default:
-  //       return '/';
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -96,20 +82,17 @@ const LoginForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Use the AuthContext login method - it will store user role automatically
+      // store user role automatically
       await login({ email, password });
 
-      // Reset error state
       setLoginError('none');
       setLoginAttempts(0);
 
-      // Note: This will be available after the login promise resolves
+      // will be available after the login promise resolves
       console.log('Login successful - user role will be automatically stored in AuthContext');
 
-      // For now, redirect to main page - you can enhance this with role-based routing
       navigate('/', { replace: true });
     } catch (error) {
-      // Increment login attempts
       setLoginAttempts((prev) => prev + 1);
 
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
@@ -122,13 +105,12 @@ const LoginForm = () => {
         }
       } else if (errorMessage.includes('Network') || errorMessage.includes('connect')) {
         setErrors({
-          email: 'Unable to connect to server. Please try again.',
-          password: 'Unable to connect to server. Please try again.',
+          email: 'Unable to connect. Please try again.',
+          password: 'Unable to connect. Please try again.',
         });
       } else {
         setLoginError('invalid');
       }
-
       console.error('Login error:', error);
     } finally {
       setIsSubmitting(false);
@@ -231,17 +213,6 @@ const LoginForm = () => {
           Create an Account
         </Link>
       </div>
-
-      {/* helper to test with different roles */}
-      {import.meta.env.MODE === 'development' && (
-        <div className='mt-8 w-full'>
-          <p className='mb-2 text-xs text-gray-500'>Test Accounts (Development):</p>
-          <div className='space-y-1 text-xs text-gray-400'>
-            <p>Customer: customer@restaurant.com / password123</p>
-            <p>Waiter: waiter@restaurant.com / password123</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
