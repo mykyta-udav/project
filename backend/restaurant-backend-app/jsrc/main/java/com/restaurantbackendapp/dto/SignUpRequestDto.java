@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
-@AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class SignUpRequestDto {
     String firstName;

@@ -8,13 +8,13 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 
 import com.google.gson.Gson;
 import com.restaurantbackendapp.dto.UserProfileResponseDto;
+import com.restaurantbackendapp.exception.UnauthorizedException;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.model.User;
 import com.restaurantbackendapp.model.enums.UserRole;
 import com.restaurantbackendapp.utils.TokenUtil;
 import jakarta.inject.Inject;
 import lombok.experimental.FieldDefaults;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.UnauthorizedException;
 
 import java.util.Map;
 
@@ -41,13 +41,16 @@ public class GetUserProfileHandler implements EndpointHandler {
 
             context.getLogger().log("Request Context: " + gson.toJson(requestEvent.getRequestContext()));
 
-            User user = userContextService.getCurrentUser(requestEvent);
+
 
             Map<String, Object> claims = TokenUtil.extractClaims(requestEvent);
+            String cognitoId = TokenUtil.extractCognitoId(requestEvent);
+
+            User user = userContextService.getCurrentUser(cognitoId);
 
             UserRole role = userContextResolver.resolveUserRole(claims);
-            if (role == null) {
-                return errorResponse(500, "Invalid or missing user role in claims");
+            if (role == null || role == UserRole.VISITOR) {
+                return unauthorizedResponse("Invalid or missing user role in claims");
             }
 
             UserProfileResponseDto responseDto = UserProfileResponseDto.builder()
