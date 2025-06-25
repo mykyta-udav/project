@@ -1,75 +1,81 @@
 package com.restaurantbackendapp.handler.impl;
 
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
 import com.google.gson.Gson;
 import com.restaurantbackendapp.dto.UserProfileResponseDto;
+import com.restaurantbackendapp.exception.UnauthorizedException;
 import com.restaurantbackendapp.handler.EndpointHandler;
+import com.restaurantbackendapp.model.User;
 import com.restaurantbackendapp.model.enums.UserRole;
+import com.restaurantbackendapp.utils.TokenUtil;
 import jakarta.inject.Inject;
-
+import lombok.experimental.FieldDefaults;
 
 import java.util.Map;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class GetUserProfileHandler implements EndpointHandler {
+    Gson gson;
+    UserContextResolver userContextResolver;
 
-    private final Gson gson;
-
-    private final UserContextResolver userContextResolver;
+    UserContextService userContextService;
 
     @Inject
 
-    public GetUserProfileHandler(Gson gson, UserContextResolver userContextResolver) {
+    public GetUserProfileHandler(Gson gson, UserContextResolver userContextResolver, UserContextService userContextService) {
         this.gson = gson;
         this.userContextResolver = userContextResolver;
+        this.userContextService = userContextService;
     }
 
     @Override
     public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
         try {
-            Map<String, Object> claims = extractClaims(requestEvent);
-            if (claims == null) {
-                return unauthorizedResponse("Unauthorized - no claims found");
-            }
+
             context.getLogger().log("Request Context: " + gson.toJson(requestEvent.getRequestContext()));
 
-            String firstName = (String) claims.getOrDefault("custom:firstName", "");
-            String lastName = (String) claims.getOrDefault("custom:lastName", "");
-            String email = (String) claims.getOrDefault("email", "");
+
+
+            Map<String, Object> claims = TokenUtil.extractClaims(requestEvent);
+            String cognitoId = TokenUtil.extractCognitoId(requestEvent);
+
+            User user = userContextService.getCurrentUser(cognitoId);
 
             UserRole role = userContextResolver.resolveUserRole(claims);
-            if (role == null) {
-                return errorResponse(500, "Invalid or missing user role in claims");
+            if (role == null || role == UserRole.VISITOR) {
+                return unauthorizedResponse("Invalid or missing user role in claims");
             }
 
             UserProfileResponseDto responseDto = UserProfileResponseDto.builder()
-                    .firstName(firstName)
-                    .lastName(lastName)
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
                     .role(role.getValue())
-                    .email(email)
-                    .imageUrl("")
+                    .email(user.getEmail())
+                    .imageUrl(user.getProfileImageUrl())
                     .build();
 
             return successResponse(responseDto);
 
+        } catch (UnauthorizedException e) {
+            context.getLogger().log("Unauthorized: " + e.getMessage());
+            return unauthorizedResponse(e.getMessage());
+        } catch (NotFoundException e) {
+            context.getLogger().log("User not found: " + e.getMessage());
+            return errorResponse(404, e.getMessage());
         } catch (Exception e) {
             context.getLogger().log("Error getting user profile: " + e.getMessage());
             return errorResponse(500, "Internal Server Error");
         }
 
-
     }
 
-
-    private Map<String, Object> extractClaims(APIGatewayProxyRequestEvent requestEvent) {
-        return (Map<String, Object>) requestEvent
-                .getRequestContext()
-                .getAuthorizer()
-                .get("claims");
-    }
 
     private APIGatewayProxyResponseEvent unauthorizedResponse(String message) {
         return new APIGatewayProxyResponseEvent()
