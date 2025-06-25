@@ -126,8 +126,6 @@ export const authAPI = {
           throw new Error(message);
         }
       }
-      
-      // For other errors, throw the original error with message
       throw new Error(apiError.message || 'Registration failed');
     }
   },

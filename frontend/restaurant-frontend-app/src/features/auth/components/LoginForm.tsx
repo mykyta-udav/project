@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { InputField } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { loginUser } from '@/store/slices/authSlice';
 
 type LoginError = 'none' | 'empty' | 'invalid' | 'locked';
 
@@ -22,7 +23,8 @@ const validatePassword = (password: string): string => {
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.auth);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -82,16 +84,21 @@ const LoginForm = () => {
     setIsSubmitting(true);
 
     try {
-      // store user role automatically
-      await login({ email, password });
+      // Use Redux dispatch instead of AuthContext login
+      const result = await dispatch(loginUser({ email, password }));
+      
+      if (loginUser.fulfilled.match(result)) {
+        setLoginError('none');
+        setLoginAttempts(0);
 
-      setLoginError('none');
-      setLoginAttempts(0);
+        // user role will be automatically stored in Redux state
+        console.log('Login successful - user role will be automatically stored in Redux');
 
-      // will be available after the login promise resolves
-      console.log('Login successful - user role will be automatically stored in AuthContext');
-
-      navigate('/', { replace: true });
+        navigate('/', { replace: true });
+      } else {
+        // Handle rejected case
+        throw new Error(result.payload as string);
+      }
     } catch (error) {
       setLoginAttempts((prev) => prev + 1);
 
