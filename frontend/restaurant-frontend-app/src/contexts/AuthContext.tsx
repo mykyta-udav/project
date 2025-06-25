@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { AuthState, LoginCredentials, RegisterCredentials } from '@/types/auth';
+import type { AuthState, LoginCredentials } from '@/types/auth';
 import { UserRole } from '@/types/auth';
-import { authService } from '@/services/mockApi';
+import { realAuthService } from '@/services/api';
 import { storageUtils } from '@/utils/storage';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
@@ -40,6 +39,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     }
   };
+
+  // Listen for Redux registration success
+  useEffect(() => {
+    const handleAuthStateChange = () => {
+      const token = storageUtils.getToken();
+      const user = storageUtils.getUser();
+      
+      if (token && user && isValidToken(token)) {
+        // If we have valid auth data in storage but not in context, sync it
+        if (!authState.isAuthenticated || authState.token !== token) {
+          console.log('Syncing AuthContext with Redux registration success');
+          setAuthState({
+            isAuthenticated: true,
+            user,
+            token,
+            isLoading: false,
+          });
+        }
+      }
+    };
+
+    // Listen for custom events from Redux
+    window.addEventListener('authStateChanged', handleAuthStateChange);
+
+    return () => {
+      window.removeEventListener('authStateChanged', handleAuthStateChange);
+    };
+  }, [authState.isAuthenticated, authState.token]);
 
   // Check for existing authentication on app startup
   useEffect(() => {
@@ -86,7 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {
-      const { user, token } = await authService.login(credentials);
+      const { user, token } = await realAuthService.login(credentials);
       
       if (!isValidToken(token)) {
         throw new Error('Invalid token received from server');
@@ -109,34 +136,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (credentials: RegisterCredentials): Promise<void> => {
+  const logout = async () => {
     try {
-      const { user, token } = await authService.register(credentials);
-      
-      if (!isValidToken(token)) {
-        throw new Error('Invalid token received from server');
-      }
-      
-      storageUtils.setToken(token);
-      storageUtils.setUser(user);
-      
-      setAuthState({
-        isAuthenticated: true,
-        user,
-        token,
-        isLoading: false,
-      });
-      
-      console.log('Registration successful, user authenticated');
-    } catch (error) {
-      console.error('Registration failed:', error);
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    try {
-      authService.logout();
+      await realAuthService.logout();
       storageUtils.clearAuth();
       setAuthState({
         isAuthenticated: false,
@@ -164,7 +166,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const user = storageUtils.getUser();
       
       if (!token || !user || !isValidToken(token)) {
-        logout();
+        await logout();
         return;
       }
       
@@ -178,7 +180,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
     } catch (error) {
       console.error('Auth refresh failed:', error);
-      logout();
+      await logout();
     }
   };
 
@@ -202,7 +204,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider value={{ 
       ...authState, 
       login, 
-      register,
       logout, 
       hasRole, 
       hasAnyRole,
