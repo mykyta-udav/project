@@ -111,10 +111,24 @@ export const authAPI = {
     } catch (error: unknown) {
       // Handle specific signup errors
       const apiError = error as ApiError;
+      
+      // Check for specific status codes
       if (apiError.status === 409) {
         throw new Error('A user with this email address already exists.');
+      } else if (apiError.status === 400) {
+        // Use the backend error message for 400 errors
+        const message = apiError.message || 'Invalid registration data';
+        if (message.toLowerCase().includes('already exists') || message.toLowerCase().includes('email already exists')) {
+          throw new Error('A user with this email address already exists.');
+        } else if (message.toLowerCase().includes('password') && message.toLowerCase().includes('complexity')) {
+          throw new Error('Password does not meet complexity requirements. Please ensure it contains uppercase, lowercase, numbers, and special characters.');
+        } else {
+          throw new Error(message);
+        }
       }
-      throw error;
+      
+      // For other errors, throw the original error with message
+      throw new Error(apiError.message || 'Registration failed');
     }
   },
 
@@ -128,7 +142,9 @@ export const authAPI = {
       if (apiError.status === 401 || apiError.status === 403) {
         throw new Error('Invalid email or password');
       }
-      throw error;
+      
+      // For other errors, throw the original error with message
+      throw new Error(apiError.message || 'Login failed');
     }
   },
 
