@@ -1,12 +1,7 @@
 package com.restaurantbackendapp.repository;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.restaurantbackendapp.repository.impl.DishRepositoryImpl;
-import com.restaurantbackendapp.repository.impl.FeedbackRepositoryImpl;
-import com.restaurantbackendapp.repository.impl.LocationRepositoryImpl;
-import com.restaurantbackendapp.repository.impl.ReservationRepositoryImpl;
-import com.restaurantbackendapp.repository.impl.TableRepositoryImpl;
-import com.restaurantbackendapp.repository.impl.WaiterRepositoryImpl;
+import com.restaurantbackendapp.repository.impl.*;
 import dagger.Module;
 import dagger.Provides;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
