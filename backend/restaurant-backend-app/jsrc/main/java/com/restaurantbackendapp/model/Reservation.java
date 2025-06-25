@@ -17,29 +17,34 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class Feedback {
+public class Reservation {
     @DynamoDBHashKey
-    private String feedbackId;
+    private String id;
 
     @DynamoDBAttribute
-    private Double rate;
+    private String status;
 
     @DynamoDBAttribute
-    private String comment;
+    private String locationAddress;
 
     @DynamoDBAttribute
-    private String userName;
-
-    @DynamoDBAttribute
-    private String userAvatarUrl;
+    private String tableId;
 
     @DynamoDBAttribute
     private String date;
 
     @DynamoDBAttribute
-    private String type;
+    private String timeSlot;
 
     @DynamoDBAttribute
-    private String locationId;
+    private String preOrder;
 
+    @DynamoDBAttribute
+    private String guestsNumber;
+
+    @DynamoDBAttribute
+    private String feedbackId;
+
+//    private String customerId;
+//    private String waiterId;
 }

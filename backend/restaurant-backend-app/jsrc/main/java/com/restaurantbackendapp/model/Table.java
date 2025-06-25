@@ -1,30 +1,36 @@
 package com.restaurantbackendapp.model;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import java.util.ArrayList;
 import java.util.List;
 
+@DynamoDBTable(tableName = "dummy")
+@Builder
 @Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 @ToString
-@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class Table {
-    private String locationId;
-    private String locationAddress;
-    private String tableNumber;
-    private String capacity;
-    private List<String> availableSlots = new ArrayList<>();
+    @DynamoDBHashKey
+    private String tableId;
 
-    public void addTimeSlot(String timeSlot) {
-        if (timeSlot != null) {
-            availableSlots.add(timeSlot);
-        }
-    }
+    @DynamoDBAttribute
+    private String locationId;
+
+    @DynamoDBAttribute
+    private Integer tableNumber;
+
+    @DynamoDBAttribute
+    private Integer guests;
+
+    @DynamoDBAttribute
+    private List<String> availableSlots;
 }
