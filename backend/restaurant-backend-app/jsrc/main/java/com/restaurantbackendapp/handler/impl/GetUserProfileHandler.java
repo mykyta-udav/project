@@ -1,6 +1,7 @@
 package com.restaurantbackendapp.handler.impl;
 
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -10,8 +11,10 @@ import com.restaurantbackendapp.dto.UserProfileResponseDto;
 import com.restaurantbackendapp.handler.EndpointHandler;
 import com.restaurantbackendapp.model.User;
 import com.restaurantbackendapp.model.enums.UserRole;
+import com.restaurantbackendapp.utils.TokenUtil;
 import jakarta.inject.Inject;
 import lombok.experimental.FieldDefaults;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.UnauthorizedException;
 
 import java.util.Map;
 
@@ -35,13 +38,12 @@ public class GetUserProfileHandler implements EndpointHandler {
     @Override
     public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent requestEvent, Context context) {
         try {
-            Map<String, Object> claims = extractClaims(requestEvent);
-            if (claims == null || claims.isEmpty()) {
-                return unauthorizedResponse("Unauthorized - no claims found");
-            }
+
             context.getLogger().log("Request Context: " + gson.toJson(requestEvent.getRequestContext()));
 
-            User user = userContextService.getCurrentUser(claims);
+            User user = userContextService.getCurrentUser(requestEvent);
+
+            Map<String, Object> claims = TokenUtil.extractClaims(requestEvent);
 
             UserRole role = userContextResolver.resolveUserRole(claims);
             if (role == null) {
@@ -58,6 +60,12 @@ public class GetUserProfileHandler implements EndpointHandler {
 
             return successResponse(responseDto);
 
+        } catch (UnauthorizedException e) {
+            context.getLogger().log("Unauthorized: " + e.getMessage());
+            return unauthorizedResponse(e.getMessage());
+        } catch (NotFoundException e) {
+            context.getLogger().log("User not found: " + e.getMessage());
+            return errorResponse(404, e.getMessage());
         } catch (Exception e) {
             context.getLogger().log("Error getting user profile: " + e.getMessage());
             return errorResponse(500, "Internal Server Error");
@@ -65,15 +73,6 @@ public class GetUserProfileHandler implements EndpointHandler {
 
     }
 
-    private Map<String, Object> extractClaims(APIGatewayProxyRequestEvent requestEvent) {
-        try {
-            return (Map<String, Object>) requestEvent.getRequestContext()
-                    .getAuthorizer()
-                    .get("claims");
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     private APIGatewayProxyResponseEvent unauthorizedResponse(String message) {
         return new APIGatewayProxyResponseEvent()

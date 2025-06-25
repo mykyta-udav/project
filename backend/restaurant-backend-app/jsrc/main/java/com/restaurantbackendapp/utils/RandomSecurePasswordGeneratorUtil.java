@@ -1,5 +1,7 @@
 package com.restaurantbackendapp.utils;
 
+import jakarta.inject.Inject;
+
 import java.security.SecureRandom;
 
 public class RandomSecurePasswordGeneratorUtil {
@@ -9,9 +11,13 @@ public class RandomSecurePasswordGeneratorUtil {
     private static final String SPECIAL_CHARS = "!@#$%&*()-_=+";
     private static final String PASSWORD_ALLOW_BASE = CHAR_LOWER + CHAR_UPPER + NUMBER + SPECIAL_CHARS;
 
-    private static final SecureRandom random = new SecureRandom();
+    private final SecureRandom random;
+    @Inject
+    public RandomSecurePasswordGeneratorUtil() {
+        this.random = new SecureRandom();
+    }
 
-    public static String generate(int length) {
+    public String generate(int length) {
         if (length < 4) {
             throw new IllegalArgumentException("Password length must be at least 4 characters to include all character types.");
         }

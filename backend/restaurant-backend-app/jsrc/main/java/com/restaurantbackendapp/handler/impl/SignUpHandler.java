@@ -28,6 +28,7 @@ public class SignUpHandler implements EndpointHandler {
     Gson gson;
     WaiterRepository waiterRepository;
     UserRepository userRepository;
+    RandomSecurePasswordGeneratorUtil passwordGenerator;
 
     static String GROUP_CUSTOMER = "Customer";
     private static final String GROUP_WAITER = "Waiter";
@@ -39,12 +40,14 @@ public class SignUpHandler implements EndpointHandler {
             @Named("userPoolId") String userPoolId,
             WaiterRepository waiterRepository,
             UserRepository userRepository,
-            Gson gson) {
+            Gson gson,
+            RandomSecurePasswordGeneratorUtil passwordGenerator) {
         this.cognitoClient = cognitoClient;
         this.userPoolId = userPoolId;
         this.waiterRepository = waiterRepository;
         this.userRepository = userRepository;
         this.gson = gson;
+        this.passwordGenerator = passwordGenerator;
     }
 
     @Override
@@ -76,7 +79,7 @@ public class SignUpHandler implements EndpointHandler {
             AttributeType emailAttr = AttributeType.builder().name("email").value(email).build();
             AttributeType emailVerifiedAttr = AttributeType.builder().name("email_verified").value("true").build();
 
-            String tempPassword = RandomSecurePasswordGeneratorUtil.generate(TEMP_PASSWORD_LENGTH);
+            String tempPassword = passwordGenerator.generate(TEMP_PASSWORD_LENGTH);
 
             AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
                     .userPoolId(userPoolId)
