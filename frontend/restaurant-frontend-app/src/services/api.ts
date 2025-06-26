@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from '@/types/auth';
 import { UserRole } from '@/types/auth';
-import type { Dish } from '@/types/dish';
+import type { Dish, DetailedDish } from '@/types/dish';
 import type { Location, LocationSelectOption } from '@/types/location';
 import type { FeedbackResponse, FeedbackType } from '@/types/feedback';
 import type { BookingTable, BookingSearchParams, ReservationRequest, ReservationResponse } from '@/types/booking';
@@ -255,6 +255,230 @@ export const tokenManager = {
 };
 
 export const dishesAPI = {
+  getDishes: async (dishType?: string, sort?: string): Promise<Dish[]> => {
+    try {
+      // TODO: Remove mock data when backend is ready
+      const mockDishes = [
+        {
+          id: '1',
+          name: 'Grilled Salmon with Herbs',
+          price: '$28',
+          weight: '350 g',
+          imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400',
+          state: 'Available',
+          dishType: 'MAIN_COURSE'
+        },
+        {
+          id: '2',
+          name: 'Chocolate Lava Cake',
+          price: '$15',
+          weight: '200 g',
+          imageUrl: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400',
+          state: 'Available',
+          dishType: 'DESSERT'
+        },
+        {
+          id: '3',
+          name: 'Caesar Salad',
+          price: '$14',
+          weight: '300 g',
+          imageUrl: 'https://images.unsplash.com/photo-1512852939750-1305098529bf?w=400',
+          state: 'On Stop',
+          dishType: 'APPETIZER'
+        },
+        {
+          id: '4',
+          name: 'Beef Tenderloin Steak',
+          price: '$45',
+          weight: '400 g',
+          imageUrl: 'https://images.unsplash.com/photo-1558030006-450675393462?w=400',
+          state: 'Available',
+          dishType: 'MAIN_COURSE'
+        },
+        {
+          id: '5',
+          name: 'Grilled Salmon with Herbs',
+          price: '$28',
+          weight: '350 g',
+          imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400',
+          state: 'Available',
+          dishType: 'MAIN_COURSE'
+        },
+      ];
+
+      // Apply filtering
+      let filteredDishes = mockDishes;
+      if (dishType && dishType !== 'ALL') {
+        filteredDishes = mockDishes.filter(dish => dish.dishType === dishType);
+      }
+
+      // Apply sorting
+      if (sort) {
+        const [field, direction] = sort.split(',');
+        filteredDishes.sort((a, b) => {
+          let aValue, bValue;
+          if (field === 'price') {
+            aValue = parseFloat(a.price.replace('$', ''));
+            bValue = parseFloat(b.price.replace('$', ''));
+          } else {
+            aValue = a.name;
+            bValue = b.name;
+          }
+          
+          if (direction === 'desc') {
+            return aValue > bValue ? -1 : 1;
+          } else {
+            return aValue < bValue ? -1 : 1;
+          }
+        });
+      }
+
+      return filteredDishes;
+
+      // TODO: Uncomment when backend is ready
+      /*
+      const params: any = {};
+      if (dishType && dishType !== 'ALL') {
+        params.dishType = dishType;
+      }
+      if (sort) {
+        params.sort = sort;
+      }
+
+      const response = await api.get<{ content: any[] }>('/dishes', { params });
+      // Transform API response to match frontend types
+      return response.data.content.map(dish => ({
+        id: dish.id,
+        name: dish.name,
+        price: dish.price,
+        weight: dish.weight,
+        imageUrl: dish.previewImageUrl || dish.imageUrl,
+        previewImageUrl: dish.previewImageUrl,
+        state: dish.state,
+      }));
+      */
+    } catch (error: unknown) {
+      console.error('Failed to fetch dishes:', error);
+      throw error;
+    }
+  },
+
+  getDishById: async (id: string): Promise<DetailedDish> => {
+    try {
+      // TODO: Remove mock data when backend is ready
+      const mockDetailedDishes: Record<string, any> = {
+        '1': {
+          id: '1',
+          name: 'Grilled Salmon with Herbs',
+          price: '$28',
+          weight: '350 g',
+          imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400',
+          state: 'Available',
+          calories: '350 kcal',
+          carbohydrates: '5-8 g',
+          description: 'Premium grilled salmon fillet seasoned with fresh herbs and served with a lemon butter sauce. A perfect balance of flavor and nutrition.',
+          dishType: 'MAIN_COURSE',
+          fats: '20-25 g',
+          proteins: '35-40 g',
+          vitamins: 'Omega-3, Vitamin D, B vitamins',
+        },
+        '2': {
+          id: '2',
+          name: 'Chocolate Lava Cake',
+          price: '$15',
+          weight: '200 g',
+          imageUrl: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400',
+          state: 'Available',
+          calories: '420 kcal',
+          carbohydrates: '45-50 g',
+          description: 'Decadent chocolate lava cake with a molten chocolate center, served warm with vanilla ice cream.',
+          dishType: 'DESSERT',
+          fats: '25-30 g',
+          proteins: '8-12 g',
+          vitamins: 'Calcium, Iron',
+        },
+        '3': {
+          id: '3',
+          name: 'Caesar Salad',
+          price: '$14',
+          weight: '300 g',
+          imageUrl: 'https://images.unsplash.com/photo-1512852939750-1305098529bf?w=400',
+          state: 'On Stop',
+          calories: '280 kcal',
+          carbohydrates: '12-15 g',
+          description: 'Classic Caesar salad with crisp romaine lettuce, parmesan cheese, croutons, and our signature Caesar dressing.',
+          dishType: 'APPETIZER',
+          fats: '22-25 g',
+          proteins: '12-15 g',
+          vitamins: 'Vitamin A, Vitamin K, Folate',
+        },
+        '4': {
+          id: '4',
+          name: 'Beef Tenderloin Steak',
+          price: '$45',
+          weight: '400 g',
+          imageUrl: 'https://images.unsplash.com/photo-1558030006-450675393462?w=400',
+          state: 'Available',
+          calories: '580 kcal',
+          carbohydrates: '2-5 g',
+          description: 'Premium beef tenderloin steak grilled to perfection and served with seasonal vegetables and your choice of sauce.',
+          dishType: 'MAIN_COURSE',
+          fats: '35-40 g',
+          proteins: '50-55 g',
+          vitamins: 'Iron, Zinc, B vitamins',
+        },
+        '5': {
+          id: '5',
+          name: 'Grilled Salmon with Herbs',
+          price: '$28',
+          weight: '350 g',
+          imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400',
+          state: 'Available',
+          calories: '350 kcal',
+          carbohydrates: '5-8 g',
+          description: 'Premium grilled salmon fillet seasoned with fresh herbs and served with a lemon butter sauce. A perfect balance of flavor and nutrition.',
+          dishType: 'MAIN_COURSE',
+          fats: '20-25 g',
+          proteins: '35-40 g',
+          vitamins: 'Omega-3, Vitamin D, B vitamins',
+        },
+      };
+
+      const dish = mockDetailedDishes[id];
+      if (!dish) {
+        throw new Error('Dish not found');
+      }
+
+      return dish;
+
+      // TODO: Uncomment when backend is ready
+      /*
+      const response = await api.get<any>(`/dishes/${id}`);
+      const dish = response.data;
+      // Transform API response to match frontend types
+      return {
+        id: dish.id,
+        name: dish.name,
+        price: dish.price,
+        weight: dish.weight,
+        imageUrl: dish.imageUrl,
+        previewImageUrl: dish.previewImageUrl,
+        state: dish.state,
+        calories: dish.calories,
+        carbohydrates: dish.carbohydrates,
+        description: dish.description,
+        dishType: dish.dishType,
+        fats: dish.fats,
+        proteins: dish.proteins,
+        vitamins: dish.vitamins,
+      };
+      */
+    } catch (error: unknown) {
+      console.error(`Failed to fetch dish ${id}:`, error);
+      throw error;
+    }
+  },
+
   getPopularDishes: async (): Promise<Dish[]> => {
     try {
       const response = await api.get<any[]>('/dishes/popular');

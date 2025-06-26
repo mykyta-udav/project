@@ -3,7 +3,11 @@ import { dishesAPI } from '@/services/api';
 import type { Dish as DishType } from '@/types/dish';
 import Dish from './Dish';
 
-const DishList = () => {
+interface DishListProps {
+  onDishClick?: (dish: DishType) => void;
+}
+
+const DishList = ({ onDishClick }: DishListProps) => {
   const [dishes, setDishes] = useState<DishType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +60,10 @@ const DishList = () => {
       <div className='flex gap-12 overflow-x-auto pb-4 pl-12 pt-10'>
         {dishes.map((dish, index) => (
           <div key={index}>
-            <Dish dish={dish} />
+            <Dish 
+              dish={dish} 
+              onClick={onDishClick ? () => onDishClick(dish) : undefined} 
+            />
           </div>
         ))}
       </div>

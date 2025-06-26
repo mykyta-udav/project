@@ -10,6 +10,7 @@ import RegisterPage from './features/auth/pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import BookPage from './pages/BookPage';
 import ReservationsPage from './pages/ReservationsPage';
+import MenuPage from './pages/MenuPage';
 
 function App() {
   return (
@@ -28,6 +29,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
+              <Route
+              path='/menu'
+              element={
+                <ProtectedRoute>
+                  <MenuPage />
                 </ProtectedRoute>
               }
             />

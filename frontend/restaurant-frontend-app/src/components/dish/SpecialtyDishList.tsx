@@ -5,9 +5,10 @@ import Dish from './Dish';
 
 interface SpecialtyDishListProps {
   locationId: string;
+  onDishClick?: (dish: DishType) => void;
 }
 
-const SpecialtyDishList = ({ locationId }: SpecialtyDishListProps) => {
+const SpecialtyDishList = ({ locationId, onDishClick }: SpecialtyDishListProps) => {
   const [dishes, setDishes] = useState<DishType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +63,10 @@ const SpecialtyDishList = ({ locationId }: SpecialtyDishListProps) => {
       <div className='grid grid-cols-1 gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12 lg:pl-12 lg:pt-10'>
         {dishes.map((dish, index) => (
           <div key={index} className='flex justify-center'>
-            <Dish dish={dish} />
+            <Dish 
+              dish={dish} 
+              onClick={onDishClick ? () => onDishClick(dish) : undefined} 
+            />
           </div>
         ))}
       </div>
